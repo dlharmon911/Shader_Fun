@@ -1,0 +1,57 @@
+Error: INFO: Initialized al_init_primitives_addon addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 30
+Error: INFO: Initialized al_init_font_addon addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 30
+Error: INFO: Initialized al_init_ttf_addon addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 30
+Error: INFO: Initialized al_init_image_addon addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 30
+Error: INFO: Initialized keyboard
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 61
+Error: INFO: Initialized mouse
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 68
+Error: INFO: Created keyboard buffer
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 76
+Error: INFO: Created display
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 92
+Error: INFO: Created event queue
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 103
+Error: INFO: Created timer
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 111
+Error: INFO: Destroyed dialog
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 148
+Error: INFO: Destroyed timer
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 158
+Error: INFO: Destroyed event queue
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 165
+Error: INFO: Destroyed display
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 172
+Error: INFO: Destroyed keyboard buffer
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 179
+Error: INFO: Shutdown image addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 185
+Error: INFO: Shutdown ttf addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 190
+Error: INFO: Shutdown font addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 195
+Error: INFO: Shutdown primitives addon
+File: D:\gtmp\repos\ShaderFun\src\sf_main.c
+Line: 200

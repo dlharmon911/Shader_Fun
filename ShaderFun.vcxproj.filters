@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Blaze Files">
+      <UniqueIdentifier>{b49c7342-cf1b-4f03-9576-1e38c2b86310}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Blaze Files">
+      <UniqueIdentifier>{87eb6cbf-7260-466e-8cf3-fd1fc616429c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ShaderFun Files">
+      <UniqueIdentifier>{6401739b-ff7b-4dc2-abce-72abb48b5824}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ShaderFun Files">
+      <UniqueIdentifier>{d1f6e9f9-3655-4c3c-8318-43b39c4a0c40}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\blz_byte.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_color.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_darray.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_dialog.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_frame.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_input.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_log.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_math.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_stringview.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_widget.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_main.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_dialog_main.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_editor.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_shader.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_uniforms.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_uniform.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_shader.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_console.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_font.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_editor_key_func.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_widget_editor_mouse_func.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blz_text.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="include\blaze\blz_color_u8_to_float.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </None>
+    <None Include="include\blaze\blz_color_list.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\blaze\blz_byte.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_color.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_common.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_frame.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_input.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_log.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_math.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_shapes.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_stringview.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_widget.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_dialog.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_darray.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_dialog_data.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_dialog_main.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_uniform.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_widget_editor.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_widget_shader.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_widget_uniforms.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_shader.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_widget_console.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_font.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blz_text.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

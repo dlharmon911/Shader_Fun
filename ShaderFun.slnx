@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ShaderFun.vcxproj" Id="9e9fe122-8c0f-4e92-9737-b93ffce4425b" />
+</Solution>
