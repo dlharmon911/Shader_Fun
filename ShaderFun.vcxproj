@@ -159,6 +159,7 @@
     <ClCompile Include="src\blz_math.c" />
     <ClCompile Include="src\sf_shader.c" />
     <ClCompile Include="src\blz_text.c" />
+    <ClCompile Include="src\sf_text_highlighter.c" />
     <ClCompile Include="src\sf_uniform.c" />
     <ClCompile Include="src\sf_dialog_main.c" />
     <ClCompile Include="src\sf_widget_console.c" />
@@ -186,12 +187,13 @@
     <ClInclude Include="include\blaze\blz_math.h" />
     <ClInclude Include="include\blaze\blz_shapes.h" />
     <ClInclude Include="include\blaze\blz_stringview.h" />
+    <ClInclude Include="include\blaze\blz_text.h" />
     <ClInclude Include="include\blaze\blz_widget.h" />
     <ClInclude Include="include\sf_dialog_data.h" />
     <ClInclude Include="include\sf_dialog_main.h" />
     <ClInclude Include="include\sf_font.h" />
     <ClInclude Include="include\sf_shader.h" />
-    <ClInclude Include="include\blz_text.h" />
+    <ClInclude Include="include\sf_text_highlighter.h" />
     <ClInclude Include="include\sf_uniform.h" />
     <ClInclude Include="include\sf_widget_console.h" />
     <ClInclude Include="include\sf_widget_editor.h" />

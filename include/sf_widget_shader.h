@@ -2,7 +2,6 @@
 #define _GUARD_SHADER_FUN_WIDGET_SHADER_H_
 
 #include "blaze.h"
-#include "blz_text.h"
 #include "sf_uniform.h"
 
 typedef struct sf_widget_shader_data_tag_t

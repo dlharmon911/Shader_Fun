@@ -24,6 +24,7 @@
 #include "blaze/blz_frame.h"
 #include "blaze/blz_widget.h"
 #include "blaze/blz_dialog.h"
+#include "blaze/blz_text.h"
 
 #endif // !_GUARD_BLAZE_H_
 

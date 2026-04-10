@@ -93,6 +93,9 @@
     <ClCompile Include="src\blz_text.c">
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\sf_text_highlighter.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -170,7 +173,10 @@
     <ClInclude Include="include\sf_font.h">
       <Filter>Header Files\ShaderFun Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\blz_text.h">
+    <ClInclude Include="include\sf_text_highlighter.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_text.h">
       <Filter>Header Files\Blaze Files</Filter>
     </ClInclude>
   </ItemGroup>

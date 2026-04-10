@@ -2,7 +2,6 @@
 #define _GUARD_SHADER_FUN_WIDGET_EDITOR_H_
 
 #include "blaze.h"
-#include "blz_text.h"
 
 typedef struct sf_widget_editor_data_tag_t
 {

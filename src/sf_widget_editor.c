@@ -1,6 +1,7 @@
 #include "blaze.h"
 #include "sf_widget_editor.h"
 #include "sf_dialog_data.h"
+#include "sf_text_highlighter.h"
 
 static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_t* data)
 {
@@ -420,7 +421,7 @@ static void sf_widget_editor_render(const blz_widget_t* widget, const sf_dialog_
 
     blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width - 1.0f, widget->m_size.m_height - 1.0f, BLAZE_FRAME_TYPE_WORKSPACE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
 
-    blz_text_draw_highlighted(font, text_data, position, widget->m_size, &data->m_editor_data.m_info);
+    blz_text_draw_highlighted(font, text_data, position, widget->m_size, &data->m_editor_data.m_info, sf_text_highlighter_get());
 }
 
 static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dialog_data_t* data)
