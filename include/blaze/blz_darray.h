@@ -3,7 +3,9 @@
 
 #include "blaze/blz_common.h"
 
+size_t blz_darray_capacity(const void* array);
 size_t blz_darray_size(const void* array);
+void* blz_darray_create(size_t element_size, size_t initial_capacity);
 void blz_darray_destroy(void* array);
 void* blz_darray_at(void* array, size_t index);
 const void* blz_darray_at_const(const void* array, size_t index);

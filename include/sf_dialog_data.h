@@ -50,7 +50,7 @@ typedef struct sf_dialog_data_tag_t
 	float m_time_current;
 	int32_t m_code;
 	int32_t m_text_flags;
-
+	bool m_fullscreen;
 } sf_dialog_data_t;
 
 #endif // !_GUARD_SHADER_FUN_DIALOG_DATA_H_

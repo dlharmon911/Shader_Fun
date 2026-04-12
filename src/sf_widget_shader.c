@@ -12,13 +12,6 @@ static int32_t sf_widget_shader_initialize(blz_widget_t* widget, sf_dialog_data_
 
 	sf_widget_shader_data_t* shader_data = &data->m_shader_data;
 
-	shader_data->m_buffer = al_create_bitmap((int32_t)widget->m_size.m_width, (int32_t)widget->m_size.m_height);
-	if (!shader_data->m_buffer)
-	{
-		DO_LOG("ERROR: Failed to create shader buffer");
-		return -1;
-	}
-
 	return 0;
 }
 
@@ -30,13 +23,6 @@ static void sf_widget_shader_uninitialize(blz_widget_t* widget, sf_dialog_data_t
 	}
 
 	sf_widget_shader_data_t* shader_data = &data->m_shader_data;
-
-
-	if (shader_data->m_buffer)
-	{
-		al_destroy_bitmap(shader_data->m_buffer);
-		shader_data->m_buffer = NULL;
-	}
 
 	if (shader_data->m_shader)
 	{
@@ -51,6 +37,7 @@ static void sf_widget_shader_start(blz_widget_t* widget, sf_dialog_data_t* data)
 	(void)data;
 
 	data->m_time_start = (float)al_get_time();
+
 }
 
 static void sf_widget_shader_stop(blz_widget_t* widget, sf_dialog_data_t* data)
@@ -82,31 +69,7 @@ static void sf_widget_shader_render(const blz_widget_t* widget, const sf_dialog_
 
 	if (data->m_shader_data.m_shader)
 	{
-		ALLEGRO_BITMAP* target = al_get_target_bitmap();
-		al_set_target_bitmap(data->m_shader_data.m_buffer);
-
-		if (data->m_shader_data.m_shader)
-		{
-			ALLEGRO_SHADER* current_shader = al_get_current_shader();
-
-			float x1 = 0.0f;
-			float y1 = 0.0f;
-			float x2 = (float)(al_get_bitmap_width(data->m_shader_data.m_buffer) - 1);
-			float y2 = (float)(al_get_bitmap_height(data->m_shader_data.m_buffer) - 1);
-
-			al_draw_filled_rectangle(x1, y1, x2, y2, (ALLEGRO_COLOR) { 0.0f, 0.0f, 0.0f, 1.0f });
-
-			al_use_shader(data->m_shader_data.m_shader);
-
-			sf_uniform_update_shader(data->m_uniform_data.m_uniforms, data->m_shader_data.m_shader);
-			al_draw_filled_rectangle(x1, y1, x2, y2, (ALLEGRO_COLOR) { 1.0f, 1.0f, 1.0f, 1.0f });
-
-			al_use_shader(current_shader);
-		}
-
-		al_set_target_bitmap(target);
-
-		al_draw_bitmap(data->m_shader_data.m_buffer, widget->m_position.m_x, widget->m_position.m_y, 0);
+		sf_shader_render(data->m_shader_data.m_shader, data->m_uniform_data.m_uniforms, widget->m_position, widget->m_size);
 		blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width, widget->m_size.m_height, BLAZE_FRAME_TYPE_NONE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
 	}
 	else
@@ -152,7 +115,7 @@ int32_t sf_widget_shader_build(const blz_text_t* text, const sf_uniform_t* unifo
 		return -1;
 	}
 
-	ALLEGRO_USTR* shader_code = blz_text_to_ustr(text);
+	ALLEGRO_USTR* shader_code = blz_text_to_ustr(text, "\n");
 
 	if (!shader_code)
 	{

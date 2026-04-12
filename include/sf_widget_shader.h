@@ -7,7 +7,6 @@
 typedef struct sf_widget_shader_data_tag_t
 {
 	ALLEGRO_SHADER* m_shader;
-	ALLEGRO_BITMAP* m_buffer;
 } sf_widget_shader_data_t;
 
 int32_t sf_widget_shader_build(const blz_text_t* text, const sf_uniform_t* uniforms, sf_widget_shader_data_t* data);

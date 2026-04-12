@@ -239,6 +239,28 @@ static void sf_dialog_main_render(const blz_dialog_t* dialog, const sf_dialog_da
 		return;
 	}
 
+	if (data->m_fullscreen)
+	{
+		if (data->m_shader_data.m_shader)
+		{
+			ALLEGRO_BITMAP* target = al_get_target_bitmap();
+			blz_vec2f_t target_pos = { 0.0f, 0.0f };
+			blz_sizef_t target_size = { (float)al_get_bitmap_width(target), (float)al_get_bitmap_height(target) };
+
+			sf_shader_render(data->m_shader_data.m_shader, data->m_uniform_data.m_uniforms, target_pos, target_size);
+		}
+		else
+		{
+			float line_padding = 10.0f;
+			float line_thickness = 6.0f;
+
+			al_draw_filled_rectangle(dialog->m_self.m_position.m_x, dialog->m_self.m_position.m_y, dialog->m_self.m_position.m_x + dialog->m_self.m_size.m_width, dialog->m_self.m_position.m_y + dialog->m_self.m_size.m_height, (ALLEGRO_COLOR) { 0.8f, 0.0f, 0.0f, 1.0f });
+			al_draw_line(dialog->m_self.m_position.m_x + line_padding, dialog->m_self.m_position.m_y + line_padding, dialog->m_self.m_position.m_x + dialog->m_self.m_size.m_width - line_padding, dialog->m_self.m_position.m_y + dialog->m_self.m_size.m_height - line_padding, (ALLEGRO_COLOR) { 0.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
+			al_draw_line(dialog->m_self.m_position.m_x + line_padding, dialog->m_self.m_position.m_y + dialog->m_self.m_size.m_height - line_padding, dialog->m_self.m_position.m_x + dialog->m_self.m_size.m_width - line_padding, dialog->m_self.m_position.m_y + line_padding, (ALLEGRO_COLOR) { 0.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
+		}
+		return;
+	}
+
 	const blz_widget_t* widget = (const blz_widget_t*)dialog;
 
 	blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width - 1.0f, widget->m_size.m_height - 1.0f, BLAZE_FRAME_TYPE_NORMAL, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);

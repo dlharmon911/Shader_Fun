@@ -4,6 +4,22 @@
 
 static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
+    if (!data->m_editor_data.m_text)
+    {
+        return true;
+	}
+
+    if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
+    {
+		int32_t excised = blz_text_excise_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+        data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+		data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+		(void)excised; // Silence unused variable warning
+
+		return true;
+    }
+
     if (data->m_editor_data.m_info.m_cursor_offset == 0)
     {
         if (data->m_editor_data.m_info.m_cursor_line == 0)
@@ -42,6 +58,22 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
 
 static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
+    if (!data->m_editor_data.m_text)
+    {
+        return true;
+    }
+
+    if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
+    {
+        int32_t excised = blz_text_excise_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+        data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+        (void)excised; // Silence unused variable warning
+
+        return true;
+    }
+
     if (data->m_editor_data.m_info.m_cursor_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text))
     {
         blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
@@ -250,6 +282,56 @@ static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_E
     return false;
 }
 
+static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+    int32_t cut = blz_text_cut_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+
+    (void)cut; // Silence unused variable warning
+
+    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+    return false;
+}
+
+static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+	int32_t copied = blz_text_copy_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+
+	(void)copied; // Silence unused variable warning
+
+    return false;
+}
+
+static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+	int32_t pasted = blz_text_paste_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+
+	(void)pasted; // Silence unused variable warning
+
+	data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+    return false;
+}
+
+static bool sf_widget_editor_process_control_key_select_all(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+    if (!widget || !data)
+    {
+        return false;
+    }
+
+    int32_t result = blz_text_select_all(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+
+	(void)result; // Silence unused variable warning
+
+    return true;
+}
+
+static bool sf_widget_editor_process_control_key_save(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+    return false;
+}
+
 typedef bool (*sf_widget_editor_process_key_func_t)(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data);
 
 static const sf_widget_editor_process_key_func_t sf_widget_editor_process_key_funcs[] =
@@ -269,14 +351,48 @@ static const sf_widget_editor_process_key_func_t sf_widget_editor_process_key_fu
     [ALLEGRO_KEY_PGDN] = sf_widget_editor_process_key_pgdn,
 };
 
+static const sf_widget_editor_process_key_func_t sf_widget_editor_process_control_key_funcs[] =
+{
+    [ALLEGRO_KEY_C] = sf_widget_editor_process_control_key_copy,
+	[ALLEGRO_KEY_S] = sf_widget_editor_process_control_key_save,
+    [ALLEGRO_KEY_V] = sf_widget_editor_process_control_key_paste,
+	[ALLEGRO_KEY_X] = sf_widget_editor_process_control_key_cut,
+	[ALLEGRO_KEY_A] = sf_widget_editor_process_control_key_select_all
+};
+
 bool sf_widget_editor_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)
+{
+	bool result = false;
+
+    if (!widget || !event || !data)
+    {
+        return false;
+    }
+
+    const sf_widget_editor_process_key_func_t func = sf_widget_editor_process_key_funcs[event->keyboard.keycode];
+
+    if (func)
+    {
+        result = func(widget, *event, (sf_dialog_data_t*)data);
+    }
+    else
+    {
+        result = sf_widget_editor_process_key_default(widget, *event, (sf_dialog_data_t*)data);
+    }
+
+    ((sf_dialog_data_t*)data)->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+
+    return result;
+}
+
+bool sf_widget_editor_control_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)
 {
     if (!widget || !event || !data)
     {
         return false;
 	}
 
-	const sf_widget_editor_process_key_func_t func = sf_widget_editor_process_key_funcs[event->keyboard.keycode];
+	const sf_widget_editor_process_key_func_t func = sf_widget_editor_process_control_key_funcs[event->keyboard.keycode];
 
     if (func)
     {

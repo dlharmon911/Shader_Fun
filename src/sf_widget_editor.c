@@ -10,17 +10,20 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         return -1;
     }
 
-    const char* mango_code = "void main()\n"
+    const char* mango_code = 
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
-        "    vec2 st = gl_FragCoord.xy / u_resolution;\n"
-        "    gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);\n"
+        "    vec2 st = fragCoord.xy / u_resolution;\n"
+        "    fragColor = vec4(st.x, st.y, 0.0, 1.0);\n"
         "}\n";
-    const char* red_pulse_code = "void main()\n"
+    const char* red_pulse_code = 
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
         "    float pulse = abs(sin(u_time));\n"
-        "    gl_FragColor = vec4(pulse, 0.0, 0.0, 1.0);\n"
+        "    fragColor = vec4(pulse, 0.0, 0.0, 1.0);\n"
         "}\n";
-    const char* plot_code = "vec3 colorA = vec3(0.149,0.141,0.912);\n"
+    const char* plot_code = 
+        "vec3 colorA = vec3(0.149,0.141,0.912);\n"
         "vec3 colorB = vec3(1.000, 0.833, 0.224);\n"
         "\n"
         "float plot(vec2 st, float pct) {\n"
@@ -28,8 +31,9 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "            smoothstep(pct, pct + 0.01, st.y);\n"
         "}\n"
         "\n"
-        "void main() {\n"
-        "    vec2 st = gl_FragCoord.xy / u_resolution.xy;\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
+        "{\n"
+        "    vec2 st = fragCoord.xy / u_resolution.xy;\n"
         "    vec3 color = vec3(0.0);\n"
         "\n"
         "    vec3 pct = vec3(st.x);\n"
@@ -44,42 +48,43 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    color = mix(color, vec3(0.0, 1.0, 0.0), plot(st, pct.g));\n"
         "    color = mix(color, vec3(0.0, 0.0, 1.0), plot(st, pct.b));\n"
         "\n"
-        "    gl_FragColor = vec4(color, 1.0);\n"
+        "    fragColor = vec4(color, 1.0);\n"
         "}\n";
 
-    const char* hsb_code = "vec3 rgb2hsb( in vec3 c ){\n"
-"    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n"
-"    vec4 p = mix(vec4(c.bg, K.wz),\n"
-"                 vec4(c.gb, K.xy),\n"
-"                 step(c.b, c.g));\n"
-"    vec4 q = mix(vec4(p.xyw, c.r),\n"
-"                 vec4(c.r, p.yzx),\n"
-"                 step(p.x, c.r));\n"
-"    float d = q.x - min(q.w, q.y);\n"
-"    float e = 1.0e-10;\n"
-"    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),\n"
-"                d / (q.x + e),\n"
-"                q.x);\n"
-"}\n"
-"vec3 hsb2rgb( in vec3 c ){\n"
-"    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),\n"
-"                             6.0)-3.0)-1.0,\n"
-"                     0.0,\n"
-"                     1.0 );\n"
-"    rgb = rgb*rgb*(3.0-2.0*rgb);\n"
-"    return c.z * mix(vec3(1.0), rgb, c.y);\n"
-"}\n"
-"void main(){\n"
-"    vec2 st = gl_FragCoord.xy/u_resolution;\n"
-"    vec3 color = vec3(0.0);\n"
-"    // We map x (0.0 - 1.0) to the hue (0.0 - 1.0)\n"
-"    // And the y (0.0 - 1.0) to the brightness\n"
-"    color = hsb2rgb(vec3(st.x,1.0,st.y));\n"
-"    gl_FragColor = vec4(color,1.0);\n"
-"}\n";
+    const char* hsb_code = 
+        "vec3 rgb2hsb( in vec3 c ){\n"
+        "    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n"
+        "    vec4 p = mix(vec4(c.bg, K.wz),\n"
+        "                 vec4(c.gb, K.xy),\n"
+        "                 step(c.b, c.g));\n"
+        "    vec4 q = mix(vec4(p.xyw, c.r),\n"
+        "                 vec4(c.r, p.yzx),\n"
+        "                 step(p.x, c.r));\n"
+        "    float d = q.x - min(q.w, q.y);\n"
+        "    float e = 1.0e-10;\n"
+        "    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),\n"
+        "                d / (q.x + e),\n"
+        "                q.x);\n"
+        "}\n"
+        "vec3 hsb2rgb( in vec3 c ){\n"
+        "    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),\n"
+        "                             6.0)-3.0)-1.0,\n"
+        "                     0.0,\n"
+        "                     1.0 );\n"
+        "    rgb = rgb*rgb*(3.0-2.0*rgb);\n"
+        "    return c.z * mix(vec3(1.0), rgb, c.y);\n"
+        "}\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
+        "{\n"
+        "    vec2 st = fragCoord.xy/u_resolution;\n"
+        "    vec3 color = vec3(0.0);\n"
+        "    // We map x (0.0 - 1.0) to the hue (0.0 - 1.0)\n"
+        "    // And the y (0.0 - 1.0) to the brightness\n"
+        "    color = hsb2rgb(vec3(st.x,1.0,st.y));\n"
+        "    fragColor = vec4(color,1.0);\n"
+        "}\n";
 
     const char* flame_code =
-
         "float noise(vec3 p) //Thx to Las^Mercury\n"
         "{\n"
         "    vec3 i = floor(p);\n"
@@ -122,9 +127,9 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    }\n"
         "    return vec4(p,glow);\n"
         "}\n"
-        "void main()\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
-        "    vec2 v = -1.0 + 2.0 * gl_FragCoord.xy / u_resolution;\n"
+        "    vec2 v = -1.0 + 2.0 * fragCoord.xy / u_resolution;\n"
         "    v.x *= u_resolution.x/u_resolution.y;\n"
         "    \n"
         "    vec3 org = vec3(0., -2., 4.);\n"
@@ -135,8 +140,8 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    \n"
         "    vec4 col = mix(vec4(1.,.5,.1,1.), vec4(0.1,.5,1.,1.), p.y*.02+.4);\n"
         "    \n"
-        "    gl_FragColor = mix(vec4(0.), col, pow(glow*2.,4.));\n"
-        "    //gl_FragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));\n"
+        "    fragColor = mix(vec4(0.), col, pow(glow*2.,4.));\n"
+        "    //fragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));\n"
         "}\n";
 
     const char* bubble_code = 
@@ -151,10 +156,10 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     "    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
     "}\n"
     "\n"
-    "void main() "
+    "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
     "{\n"
     "    // Map screen coordinates to -2.0 to 2.0 range (matching your MAXY)\n"
-    "    vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 4.0;\n"
+    "    vec2 uv = (fragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 4.0;\n"
     "    float t = u_time * 0.2; // Slowed down DT\n"
     "    float R = 2.0 * PI / NSHAPES;\n"
     "    vec3 finalCol = vec3(0.0);\n"
@@ -181,7 +186,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     "            }\n"
     "        }\n"
     "    }\n"
-    "    gl_FragColor = vec4(finalCol, 1.0);\n"
+    "    fragColor = vec4(finalCol, 1.0);\n"
     "}\n";
     const char* plasma_code =
         "// by Nikos Papadopoulos, 4rknova / 2016\n"
@@ -193,7 +198,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "// Controls the overall zoom level of the plasma pattern\n"
         "#define SCALE 1.0\n"
         " \n"
-        "void main()\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
         "    float time = u_time;\n"
         " \n"
@@ -203,7 +208,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         " \n"
         "    // Map fragment coordinates to a scaled, aspect-corrected UV space\n"
         "    // and scroll the pattern over time to create movement\n"
-        "    vec2 uv = SCALE * gl_FragCoord.xy / u_resolution.xy * aspectRatio * 4.0 + time * 0.3;\n"
+        "    vec2 uv = SCALE * fragCoord.xy / u_resolution.xy * aspectRatio * 4.0 + time * 0.3;\n"
         " \n"
         "    // Generate two oscillating phase values that evolve over time.\n"
         "    // These drive the plasma's swirling motion by combining the\n"
@@ -224,7 +229,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    // Map the scalar plasma value to RGB using cosine-based palette.\n"
         "    // The offset vector (.2, .5, .9) shifts each channel's phase,\n"
         "    // producing smooth color gradients across the pattern.\n"
-        "    gl_FragColor = vec4(0.5 + 0.5 * cos(plasma + vec3(0.2, 0.5, 0.9)), 1.0);\n"
+        "    fragColor = vec4(0.5 + 0.5 * cos(plasma + vec3(0.2, 0.5, 0.9)), 1.0);\n"
         " \n"
         "    #ifdef SPECULAR\n"
         "    // Approximate a specular lighting pass using screen-space derivatives.\n"
@@ -233,19 +238,19 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    // A simple Phong-style specular term is then applied with a warm tint\n"
         "    // to give the plasma a glossy, liquid appearance.\n"
         "    vec3 surfaceNormal = normalize(vec3(\n"
-        "        length(dFdx(gl_FragColor)),\n"
-        "        length(dFdy(gl_FragColor)),\n"
+        "        length(dFdx(fragColor)),\n"
+        "        length(dFdy(fragColor)),\n"
         "        0.5 / u_resolution.y\n"
         "    ));\n"
         "    float specularIntensity = pow(max(surfaceNormal.z, 0.0), 2.0);\n"
         "    vec4 warmTint = vec4(1.0, 0.7, 0.4, 1.0);\n"
-        "    gl_FragColor *= warmTint * specularIntensity + 0.75;\n"
+        "    fragColor *= warmTint * specularIntensity + 0.75;\n"
         "    #endif\n"
         "}\n";
     const char* mandelbrot_code = 
-        "void main()\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
-        "    vec2 c = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 3.0 - vec2(0.5, 0.0);\n"
+        "    vec2 c = (fragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 3.0 - vec2(0.5, 0.0);\n"
         "    vec2 z = vec2(0.0);\n"
         "    int iterations = 0;\n"
         "    const int maxIterations = 100;\n"
@@ -257,7 +262,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    }\n"
         "\n"
         "    float t = float(iterations) / float(maxIterations);\n"
-        "    gl_FragColor = vec4(vec3(t), 1.0);\n"
+        "    fragColor = vec4(vec3(t), 1.0);\n"
         "}";
     const char* perlin_noise_code = 
         "float hash(vec2 p)\n"
@@ -280,11 +285,11 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;\n"
         "}\n"
         "\n"
-        "void main()\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
         "{\n"
-        "    vec2 uv = gl_FragCoord.xy / u_resolution;\n"
+        "    vec2 uv = fragCoord.xy / u_resolution;\n"
         "    float n = perlin(uv * 10.0 + u_time);\n"
-        "    gl_FragColor = vec4(vec3(n), 1.0);\n"
+        "    fragColor = vec4(vec3(n), 1.0);\n"
         "}";
     const char* fractal_code = 
         "precision highp float;\n\n"
@@ -330,8 +335,9 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "        map(p + e.yyx) - map(p - e.yyx)\n"
         "    ));\n"
         "}\n"
-        "void main() {\n"
-        "    vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;\n"
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
+		"{\n"
+        "    vec2 uv = (fragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;\n"
         "    vec3 ro = vec3(0, 0, -3.0); // Ray origin\n"
         "    vec3 rd = normalize(vec3(uv, 1.5)); // Ray direction\n"
         "    \n"
@@ -363,15 +369,18 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         "        \n"
         "        col = mix(col, crystalCol * diff + spec + (fresnel * 0.5), alpha);\n"
         "    }\n"
-        "    gl_FragColor = vec4(col, 1.0);\n"
+        "    fragColor = vec4(col, 1.0);\n"
         "}\n"; 
 
-    data->m_editor_data.m_text = blz_text_create(plasma_code);
+
+    data->m_editor_data.m_text = blz_text_create(bubble_code);
+        
+       //blz_text_load_from_file("plasma.txt");
     
     if (!data->m_editor_data.m_text)
     {
         return -1;
-    }
+    }   
     
     data->m_editor_data.m_info.m_cursor_line = 0;
     data->m_editor_data.m_info.m_cursor_offset = 0;
@@ -459,40 +468,6 @@ static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dia
     }
 }
 
-static bool sf_widget_editor_process_controlcode(blz_widget_t* widget, sf_dialog_data_t* data, int32_t keycode)
-{
-    if (keycode == ALLEGRO_KEY_A)
-    {
-        // todo select all
-
-        return true;
-    }
-    else if (keycode == ALLEGRO_KEY_V)
-    {
-        // todo paste
-
-        return true;
-    }
-    else if (keycode == ALLEGRO_KEY_C)
-    {
-        // todo copy
-        
-        return true;
-    }
-    else if (keycode == ALLEGRO_KEY_S)
-    {
-        data->m_code = SF_DIALOG_CODE_SAVE;
-        return true;
-    }
-    else if (keycode == ALLEGRO_KEY_ESCAPE)
-    {
-        data->m_code = SF_DIALOG_CODE_ESCAPE;
-        return true;
-    }
-
-    return false;
-}
-
 static bool sf_widget_editor_on_event(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
     if (!widget || !data)
@@ -507,8 +482,9 @@ static bool sf_widget_editor_on_event(blz_widget_t* widget, ALLEGRO_EVENT event,
             if (event.keyboard.keycode >= ALLEGRO_KEY_A &&
                 event.keyboard.keycode <= ALLEGRO_KEY_Z &&
                 (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) &&
-                sf_widget_editor_process_controlcode(widget, data, event.keyboard.keycode))
+                sf_widget_editor_control_key_func(widget, &event, data))
             {
+                sf_widget_editor_scroll_to_cursor(widget, data);
                 return true;
             }
 

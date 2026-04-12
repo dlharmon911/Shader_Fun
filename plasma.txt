@@ -1,0 +1,58 @@
+// by Nikos Papadopoulos, 4rknova / 2016
+// Specular highlights contributed by Shane
+ 
+// Enable specular highlight pass for added depth and shine
+#define SPECULAR
+ 
+// Controls the overall zoom level of the plasma pattern
+#define SCALE 1.0
+ 
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    float time = u_time;
+ 
+    // Compute the aspect ratio correction vector so the pattern
+    // isn't stretched on non-square viewports
+    vec2 aspectRatio = vec2(u_resolution.x / u_resolution.y, 1.0);
+ 
+    // Map fragment coordinates to a scaled, aspect-corrected UV space
+    // and scroll the pattern over time to create movement
+    vec2 uv = SCALE * fragCoord.xy / u_resolution.xy * aspectRatio * 4.0 + time * 0.3;
+ 
+    // Generate two oscillating phase values that evolve over time.
+    // These drive the plasma's swirling motion by combining the
+    // x and y axes with sin/cos pairs at different rates.
+    float phaseVertical   = 0.1 + cos(uv.y + sin(0.148 - time)) + 2.4 * time;
+    float phaseHorizontal = 0.9 + sin(uv.x + cos(0.628 + time)) - 0.7 * time;
+ 
+    // Radial distance from the origin. Adds circular symmetry
+    // to the interference pattern
+    float radialDist = length(uv);
+ 
+    // Combine the radial distance with both phase terms to produce
+    // the final plasma interference value. The product of cos and sin
+    // creates the characteristic banded, swirling look.
+    float plasma = 7.0 * cos(radialDist + phaseHorizontal) 
+                       * sin(phaseVertical + phaseHorizontal);
+ 
+    // Map the scalar plasma value to RGB using cosine-based palette.
+    // The offset vector (.2, .5, .9) shifts each channel's phase,
+    // producing smooth color gradients across the pattern.
+    fragColor = vec4(0.5 + 0.5 * cos(plasma + vec3(0.2, 0.5, 0.9)), 1.0);
+ 
+    #ifdef SPECULAR
+    // Approximate a specular lighting pass using screen-space derivatives.
+    // dFdx/dFdy estimate the color gradient between neighbouring fragments,
+    // which serves as a proxy for surface normals on the plasma "surface".
+    // A simple Phong-style specular term is then applied with a warm tint
+    // to give the plasma a glossy, liquid appearance.
+    vec3 surfaceNormal = normalize(vec3(
+        length(dFdx(fragColor)),
+        length(dFdy(fragColor)),
+        0.5 / u_resolution.y
+    ));
+    float specularIntensity = pow(max(surfaceNormal.z, 0.0), 2.0);
+    vec4 warmTint = vec4(1.0, 0.7, 0.4, 1.0);
+    fragColor *= warmTint * specularIntensity + 0.75;
+    #endif
+}

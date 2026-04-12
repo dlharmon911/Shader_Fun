@@ -43,7 +43,9 @@ static int32_t sf_init( sf_data_t* data)
 		return -1;
 	}
 
+#ifdef _DEBUG
 	blz_log_open("output_log.txt");
+#endif
 
 	if (!_sf_init_addon("al_init_primitives_addon", al_init_primitives_addon) ||
 		!_sf_init_addon("al_init_font_addon", al_init_font_addon) ||
@@ -200,7 +202,9 @@ static void sf_deinit( sf_data_t* data)
 		DO_LOG("INFO: Shutdown primitives addon");
 	}
 
+#ifdef _DEBUG
 	blz_log_close();
+#endif
 
 	al_uninstall_system();
 }
@@ -231,6 +235,11 @@ static void sf_input(sf_data_t* data)
 		} break;
 		case ALLEGRO_EVENT_KEY_DOWN:
 		{
+			if (event.keyboard.keycode == ALLEGRO_KEY_F2)
+			{
+				data->m_dialog_data->m_fullscreen = !data->m_dialog_data->m_fullscreen;
+			}
+
 			data->m_input->m_keyboard.m_button[event.keyboard.keycode] = BLAZE_INPUT_BUTTON_PRESSED | BLAZE_INPUT_BUTTON_CHANGED;
 			data->m_input->m_keyboard.m_state = BLAZE_INPUT_BUTTON_PRESSED | BLAZE_INPUT_BUTTON_CHANGED;
 		} break;
@@ -327,6 +336,11 @@ static void sf_loop(sf_data_t* data)
 	al_flush_event_queue(data->m_event_queue);
 	al_start_timer(data->m_timer);
 
+	if (((blz_widget_t*)data->m_dialog)->m_table && ((blz_widget_t*)data->m_dialog)->m_table->m_start)
+	{
+		((blz_widget_t*)data->m_dialog)->m_table->m_start((blz_widget_t*)data->m_dialog, data->m_dialog_data);
+	}
+
 	while (data->m_running)
 	{
 		sf_input(data);
@@ -339,6 +353,11 @@ static void sf_loop(sf_data_t* data)
 		sf_render(data);
 
 		al_rest(0.01);
+	}
+
+	if (((blz_widget_t*)data->m_dialog)->m_table && ((blz_widget_t*)data->m_dialog)->m_table->m_stop)
+	{
+		((blz_widget_t*)data->m_dialog)->m_table->m_stop((blz_widget_t*)data->m_dialog, data->m_dialog_data);
 	}
 
 	al_stop_timer(data->m_timer);
@@ -356,14 +375,15 @@ int32_t main(int32_t argc, char* argv[])
 	{
 		.m_editor_data = { { 0 }, NULL },
 		.m_console_data = { { 0 }, NULL },
-		.m_shader_data = { NULL, NULL },
+		.m_shader_data = { NULL },
 		.m_uniform_data = { NULL },
 		.m_time_start = 0.0f,
 		.m_time_current = 0.0f,
 		.m_focus_widget = NULL,
 		.m_fonts = { { NULL }, { NULL }, { NULL } },
 		.m_code = SF_DIALOG_CODE_NONE,
-		.m_text_flags = SF_TEXT_FLAG_CLEAN
+		.m_text_flags = SF_TEXT_FLAG_CLEAN,
+		.m_fullscreen = false
 	};
 
 	sf_data_t data =

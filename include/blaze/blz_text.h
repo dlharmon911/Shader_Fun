@@ -58,15 +58,24 @@ typedef struct blz_text_highlighter_t
 	void* m_user_data;
 } blz_text_highlighter_t;
 
+blz_text_t* blz_text_create_empty();
 blz_text_t* blz_text_create(const char* text);
 void blz_text_destroy(blz_text_t* text);
+
+blz_text_t* blz_text_clone(const blz_text_t* text);
+blz_text_t* blz_text_load_from_file(const char* filename);
+bool blz_text_save_to_file(const blz_text_t* text, const char* filename);
+
 size_t blz_text_get_line_count(const blz_text_t* text);
 blz_text_node_t* blz_text_get_line(const blz_text_t* text, size_t index);
-ALLEGRO_USTR* blz_text_to_ustr(const blz_text_t* text);
-int32_t blz_text_excise_selection(blz_text_t* text, const blz_text_selection_t* selection);
-int32_t blz_text_cut_selection(const blz_text_t* text, const blz_text_selection_t* selection, ALLEGRO_USTR** clipboard);
-int32_t blz_text_copy_selection(const blz_text_t* text, const blz_text_selection_t* selection, ALLEGRO_USTR** clipboard);
-int32_t blz_text_paste_selection(blz_text_t* text, const blz_text_selection_t* selection, const ALLEGRO_USTR* clipboard);
+ALLEGRO_USTR* blz_text_to_ustr(const blz_text_t* text, const char* new_line);
+char* blz_text_to_cstr(const blz_text_t* text, const char* new_line);
+int32_t blz_text_excise_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
+int32_t blz_text_cut_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
+int32_t blz_text_copy_selection(const blz_text_t* text, const blz_text_info_t* info, const blz_text_selection_t* selection);
+int32_t blz_text_paste_cursor(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_paste_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
+int32_t blz_text_select_all(const blz_text_t* text, blz_text_info_t* info);
 blz_text_node_t* blz_text_create_node();
 void blz_text_node_destroy(blz_text_node_t* node);
 blz_text_node_t* blz_text_get_previous_line(const blz_text_t* text, const blz_text_node_t* current_line);

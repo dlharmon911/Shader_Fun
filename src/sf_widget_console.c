@@ -9,7 +9,7 @@ static int32_t sf_widget_console_initialize(blz_widget_t* widget, sf_dialog_data
 		return -1;
 	}
 
-	data->m_console_data.m_text = blz_text_create("");
+	data->m_console_data.m_text = blz_text_create_empty();
 
 	if (!data->m_console_data.m_text)
 	{

@@ -22,9 +22,30 @@ static blz_darray_header_t* blz_darray_header_create(size_t element_size, size_t
 	return header;
 }
 
+void* blz_darray_create(size_t element_size, size_t initial_capacity)
+{
+	blz_darray_header_t* header = blz_darray_header_create(element_size, initial_capacity);
+	if (header == NULL)
+	{
+		return NULL;
+	}
+	return (void*)(header + 1);
+}
+
 static void blz_darray_header_destroy(blz_darray_header_t* header)
 {
 	al_free(header);
+}
+
+
+size_t blz_darray_capacity(const void* array)
+{
+	if (array == NULL)
+	{
+		return 0;
+	}
+	const blz_darray_header_t* header = (const blz_darray_header_t*)array - 1;
+	return header->m_capacity;
 }
 
 size_t blz_darray_size(const void* array)
