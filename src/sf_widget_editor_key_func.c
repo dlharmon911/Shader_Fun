@@ -242,7 +242,7 @@ static bool sf_widget_editor_process_key_end(blz_widget_t* widget, ALLEGRO_EVENT
 
 static bool sf_widget_editor_process_key_pgup(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
+    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
     
     data->m_editor_data.m_info.m_cursor_line -= visible_line_count;
     
@@ -256,7 +256,7 @@ static bool sf_widget_editor_process_key_pgup(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
+    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
     data->m_editor_data.m_info.m_cursor_line += visible_line_count;
     int32_t line_count = (int32_t)blz_text_get_line_count(data->m_editor_data.m_text);
 

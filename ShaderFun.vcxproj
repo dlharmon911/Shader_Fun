@@ -145,42 +145,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\blz_darray.c" />
-    <ClCompile Include="src\blz_dialog.c" />
-    <ClCompile Include="src\blz_input.c" />
-    <ClCompile Include="src\blz_stringview.c" />
-    <ClCompile Include="src\blz_widget.c" />
-    <ClCompile Include="src\sf_font.c" />
-    <ClCompile Include="src\sf_main.c" />
-    <ClCompile Include="src\blz_byte.c" />
-    <ClCompile Include="src\blz_color.c" />
-    <ClCompile Include="src\blz_frame.c" />
-    <ClCompile Include="src\blz_log.c" />
-    <ClCompile Include="src\blz_math.c" />
-    <ClCompile Include="src\sf_shader.c" />
-    <ClCompile Include="src\blz_text.c" />
-    <ClCompile Include="src\sf_text_highlighter.c" />
-    <ClCompile Include="src\sf_uniform.c" />
-    <ClCompile Include="src\sf_dialog_main.c" />
-    <ClCompile Include="src\sf_widget_console.c" />
-    <ClCompile Include="src\sf_widget_editor.c" />
-    <ClCompile Include="src\sf_widget_editor_key_func.c" />
-    <ClCompile Include="src\sf_widget_editor_mouse_func.c" />
-    <ClCompile Include="src\sf_widget_shader.c" />
-    <ClCompile Include="src\sf_widget_uniforms.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="include\blaze\blz_color_u8_to_float.h" />
-    <None Include="include\blaze\blz_color_list.h" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\blaze.h" />
     <ClInclude Include="include\blaze\blz_byte.h" />
     <ClInclude Include="include\blaze\blz_color.h" />
+    <ClInclude Include="include\blaze\blz_color_list.h" />
+    <ClInclude Include="include\blaze\blz_color_u8_to_float.h" />
     <ClInclude Include="include\blaze\blz_common.h" />
     <ClInclude Include="include\blaze\blz_darray.h" />
     <ClInclude Include="include\blaze\blz_dialog.h" />
+    <ClInclude Include="include\blaze\blz_font.h" />
     <ClInclude Include="include\blaze\blz_frame.h" />
     <ClInclude Include="include\blaze\blz_input.h" />
     <ClInclude Include="include\blaze\blz_log.h" />
@@ -191,7 +167,6 @@
     <ClInclude Include="include\blaze\blz_widget.h" />
     <ClInclude Include="include\sf_dialog_data.h" />
     <ClInclude Include="include\sf_dialog_main.h" />
-    <ClInclude Include="include\sf_font.h" />
     <ClInclude Include="include\sf_shader.h" />
     <ClInclude Include="include\sf_text_highlighter.h" />
     <ClInclude Include="include\sf_uniform.h" />
@@ -199,6 +174,31 @@
     <ClInclude Include="include\sf_widget_editor.h" />
     <ClInclude Include="include\sf_widget_shader.h" />
     <ClInclude Include="include\sf_widget_uniforms.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\blaze\blz_byte.c" />
+    <ClCompile Include="src\blaze\blz_color.c" />
+    <ClCompile Include="src\blaze\blz_darray.c" />
+    <ClCompile Include="src\blaze\blz_dialog.c" />
+    <ClCompile Include="src\blaze\blz_font.c" />
+    <ClCompile Include="src\blaze\blz_frame.c" />
+    <ClCompile Include="src\blaze\blz_input.c" />
+    <ClCompile Include="src\blaze\blz_log.c" />
+    <ClCompile Include="src\blaze\blz_math.c" />
+    <ClCompile Include="src\blaze\blz_stringview.c" />
+    <ClCompile Include="src\blaze\blz_text.c" />
+    <ClCompile Include="src\blaze\blz_widget.c" />
+    <ClCompile Include="src\sf_dialog_main.c" />
+    <ClCompile Include="src\sf_main.c" />
+    <ClCompile Include="src\sf_shader.c" />
+    <ClCompile Include="src\sf_text_highlighter.c" />
+    <ClCompile Include="src\sf_uniform.c" />
+    <ClCompile Include="src\sf_widget_console.c" />
+    <ClCompile Include="src\sf_widget_editor.c" />
+    <ClCompile Include="src\sf_widget_editor_key_func.c" />
+    <ClCompile Include="src\sf_widget_editor_mouse_func.c" />
+    <ClCompile Include="src\sf_widget_shader.c" />
+    <ClCompile Include="src\sf_widget_uniforms.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,4 @@
 #include "blaze.h"
-#include "sf_font.h"
 #include "sf_shader.h"
 #include "sf_dialog_data.h"
 #include "sf_dialog_main.h"
@@ -117,7 +116,7 @@ static int32_t sf_init( sf_data_t* data)
 	al_register_event_source(data->m_event_queue, al_get_keyboard_event_source());
 	al_register_event_source(data->m_event_queue, al_get_mouse_event_source());
 
-	if (sf_font_cache_load(&data->m_dialog_data->m_fonts) != 0)
+	if (blz_font_cache_load(&data->m_dialog_data->m_fonts) != 0)
 	{
 		DO_LOG("ERROR: Failed to load font cache");
 		return -1;
@@ -150,7 +149,7 @@ static void sf_deinit( sf_data_t* data)
 		DO_LOG("INFO: Destroyed dialog");
 	}
 
-	sf_font_cache_unload(&data->m_dialog_data->m_fonts);
+	blz_font_cache_unload(&data->m_dialog_data->m_fonts);
 
 	if (data->m_timer)
 	{

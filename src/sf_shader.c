@@ -36,7 +36,7 @@ const char* glsl_suffix_code =
 "\nvoid main()\n"
 "{\n"
 "    vec2 fragCoord = (gl_FragCoord.xy - u_position);\n"
-"    fragCoord.y = u_resolution.y - (u_world_resolution.y - fragCoord.y);\n"
+"    fragCoord.y = u_resolution.y - (u_world.y - fragCoord.y);\n"
 "    mainImage(gl_FragColor, fragCoord);\n"
 "}\n\n";
 
@@ -131,9 +131,6 @@ static int32_t sf_shader_generate_text(ALLEGRO_USTR* text, blz_stringview_t view
 	{
 		return -1;
 	}
-
-	al_ustr_append_cstr(text, "uniform vec2 u_world_resolution;\n");
-	al_ustr_append_cstr(text, "uniform vec2 u_position;\n");
 
 	size_t uniform_count = blz_darray_size(uniform);
 
@@ -241,22 +238,24 @@ ALLEGRO_SHADER* sf_shader_generate(const ALLEGRO_USTR* text_str, const sf_unifor
 	return shader;
 }
 
-void sf_shader_render(ALLEGRO_SHADER* shader, const sf_uniform_t* uniform, blz_vec2f_t position, blz_sizef_t resolution)
+void sf_shader_render(ALLEGRO_SHADER* shader, sf_uniform_t* uniform, blz_vec2f_t position, blz_sizef_t resolution)
 {
 	ALLEGRO_SHADER* current_shader = al_get_current_shader();
 	ALLEGRO_BITMAP* target = al_get_target_bitmap();
-
-	blz_sizef_t world_resolution = { (float)al_get_bitmap_width(target), (float)al_get_bitmap_height(target) };
+	blz_sizef_t world = { (float)al_get_bitmap_width(target), (float)al_get_bitmap_height(target) };
+	sf_uniform_t* u_position = sf_uniform_get(uniform, "u_position");
+	sf_uniform_t* u_world = sf_uniform_get(uniform, "u_world");
 
 	al_use_shader(shader);
-	al_set_shader_float_vector("u_position", 2, &position.m_x, 1);
-	al_set_shader_float_vector("u_world_resolution", 2, &world_resolution.m_width, 1);
+
+	sf_uniform_set_float_vec(u_position, &position.m_x, 2);
+	sf_uniform_set_float_vec(u_world, &world.m_width, 2);
 
 	sf_uniform_update_shader(uniform, shader);
 
-	if (blz_math_is_equal_f(world_resolution.m_width, resolution.m_width) && blz_math_is_equal_f(world_resolution.m_height, resolution.m_height))
+	if (blz_math_is_equal_f(world.m_width, resolution.m_width) && blz_math_is_equal_f(world.m_height, resolution.m_height))
 	{
-		al_set_shader_float_vector("u_resolution", 2, &world_resolution.m_width, 1);
+		al_set_shader_float_vector("u_resolution", 2, &world.m_width, 1);
 	}
 
 	al_draw_filled_rectangle(position.m_x, position.m_y, position.m_x + resolution.m_width, position.m_y + resolution.m_height, (ALLEGRO_COLOR) { 1.0f, 1.0f, 1.0f, 1.0f });

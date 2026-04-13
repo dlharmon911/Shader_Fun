@@ -424,7 +424,7 @@ static void sf_widget_editor_update(blz_widget_t* widget, sf_dialog_data_t* data
 
 static void sf_widget_editor_render(const blz_widget_t* widget, const sf_dialog_data_t* data)
 {
-    const ALLEGRO_FONT* font = data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font;
+    const ALLEGRO_FONT* font = data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font;
     const blz_text_t* text_data = data->m_editor_data.m_text;
     blz_vec2f_t position = { widget->m_position.m_x - data->m_editor_data.m_text_x_offset, widget->m_position.m_y };
 
@@ -441,7 +441,7 @@ static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dia
     {
         return;
     }
-    float line_height = (float)al_get_font_line_height(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing;
+    float line_height = (float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing;
     float cursor_y = widget->m_position.m_y + data->m_editor_data.m_info.m_vertical_padding + (line_height * (float)data->m_editor_data.m_info.m_cursor_line) - (line_height * (float)data->m_editor_data.m_info.m_top_line);
 
 
@@ -456,7 +456,7 @@ static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dia
 
     // Horizontal scrolling
 
-    float cursor_x = widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding + (float)al_get_text_width(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font, "W") * (float)data->m_editor_data.m_info.m_cursor_offset - data->m_editor_data.m_text_x_offset;
+    float cursor_x = widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding + (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font, "W") * (float)data->m_editor_data.m_info.m_cursor_offset - data->m_editor_data.m_text_x_offset;
 
     if (cursor_x < widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding)
     {

@@ -32,11 +32,12 @@ typedef struct sf_uniform_tag_t
 		float m_float_vec[4];
 		ALLEGRO_TRANSFORM m_matrix;
 	} m_value;
+	bool m_visible;
 } sf_uniform_t;
 
 void sf_uniform_clear(sf_uniform_t* uniform);
 size_t sf_uniform_size(const sf_uniform_t* uniform);
-bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, const void* value, size_t value_size);
+bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, const void* value, size_t value_size, bool visible);
 bool sf_uniform_pop(sf_uniform_t* uniform);
 void sf_uniform_destroy(sf_uniform_t* uniform);
 sf_uniform_t* sf_uniform_get(sf_uniform_t* uniform, const char* name);

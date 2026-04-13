@@ -17,8 +17,8 @@ static void sf_set_line_selection_point(const blz_widget_t* widget, const sf_dia
 		return;
 	}
 
-	int32_t mouse_line_pos = (int32_t)(((float)event.mouse.y - widget->m_position.m_y - data->m_editor_data.m_info.m_vertical_padding) / ((float)al_get_font_line_height(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing)) + data->m_editor_data.m_info.m_top_line;
-	int32_t mouse_offset_pos = (int32_t)(((float) event.mouse.x - widget->m_position.m_x - data->m_editor_data.m_info.m_horizontal_padding + data->m_editor_data.m_text_x_offset) / (float)al_get_text_width(data->m_fonts[SF_FONT_ID_EDITOR_REGULAR].m_font, "W"));
+	int32_t mouse_line_pos = (int32_t)(((float)event.mouse.y - widget->m_position.m_y - data->m_editor_data.m_info.m_vertical_padding) / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing)) + data->m_editor_data.m_info.m_top_line;
+	int32_t mouse_offset_pos = (int32_t)(((float) event.mouse.x - widget->m_position.m_x - data->m_editor_data.m_info.m_horizontal_padding + data->m_editor_data.m_text_x_offset) / (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font, "W"));
 
     mouse_line_pos = max(0, min(mouse_line_pos, line_count - 1));
 

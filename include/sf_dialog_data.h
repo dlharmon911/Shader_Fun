@@ -3,7 +3,6 @@
 
 #include "blaze.h"
 #include "sf_uniform.h"
-#include "sf_font.h"
 #include "sf_widget_console.h"
 #include "sf_widget_editor.h"
 #include "sf_widget_shader.h"
@@ -45,7 +44,7 @@ typedef struct sf_dialog_data_tag_t
 	sf_widget_shader_data_t m_shader_data;
 	sf_widget_uniform_data_t m_uniform_data;
 	blz_widget_t* m_focus_widget;
-	sf_font_cache_t m_fonts;
+	blz_font_cache_t m_fonts;
 	float m_time_start;
 	float m_time_current;
 	int32_t m_code;

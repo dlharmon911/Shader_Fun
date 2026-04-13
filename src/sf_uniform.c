@@ -23,7 +23,7 @@ size_t sf_uniform_size(const sf_uniform_t* uniform)
 	return blz_darray_size(uniform);
 }
 
-bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, const void* value, size_t value_size)
+bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, const void* value, size_t value_size, bool visible)
 {
 	sf_uniform_t new_uniform = { 0 };
 
@@ -44,6 +44,7 @@ bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, con
 	new_uniform.m_name[name_length] = '\0';
 
 	new_uniform.m_type = type;
+	new_uniform.m_visible = visible;
 
 	memcpy(&new_uniform.m_value, value, value_size);
 
