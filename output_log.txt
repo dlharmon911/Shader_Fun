@@ -1,57 +1,19 @@
-Error: INFO: Initialized al_init_primitives_addon addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 29
-Error: INFO: Initialized al_init_font_addon addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 29
-Error: INFO: Initialized al_init_ttf_addon addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 29
-Error: INFO: Initialized al_init_image_addon addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 29
-Error: INFO: Initialized keyboard
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 62
-Error: INFO: Initialized mouse
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 69
-Error: INFO: Created keyboard buffer
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 77
-Error: INFO: Created display
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 93
-Error: INFO: Created event queue
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 104
-Error: INFO: Created timer
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 112
-Error: INFO: Destroyed dialog
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 149
-Error: INFO: Destroyed timer
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 159
-Error: INFO: Destroyed event queue
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 166
-Error: INFO: Destroyed display
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 173
-Error: INFO: Destroyed keyboard buffer
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 180
-Error: INFO: Shutdown image addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 186
-Error: INFO: Shutdown ttf addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 191
-Error: INFO: Shutdown font addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 196
-Error: INFO: Shutdown primitives addon
-File: D:\gtmp\repos\ShaderFun\src\sf_main.c
-Line: 201
+Info: Initialized al_init_primitives_addon addon
+Info: Initialized al_init_font_addon addon
+Info: Initialized al_init_ttf_addon addon
+Info: Initialized al_init_image_addon addon
+Info: Initialized keyboard
+Info: Initialized mouse
+Info: Created keyboard buffer
+Info: Created display
+Info: Created event queue
+Info: Created timer
+Info: Destroyed dialog
+Info: Destroyed timer
+Info: Destroyed event queue
+Info: Destroyed display
+Info: Destroyed keyboard buffer
+Info: Shutdown image addon
+Info: Shutdown ttf addon
+Info: Shutdown font addon
+Info: Shutdown primitives addon

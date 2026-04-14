@@ -742,12 +742,14 @@ static int32_t blz_text_merge_nodes(blz_text_node_t** head, blz_text_node_t* a, 
 	return 0;
 }
 
-int32_t blz_text_excise_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection)
+int32_t blz_text_excise(blz_text_t* text, blz_text_info_t* info)
 {
-	if (!text || !selection)
+	if (!text || !info)
 	{
 		return -1;
 	}
+
+	const blz_text_selection_t* selection = &info->m_selection;
 
 	int32_t line_a = selection->m_start.m_line;
 	int32_t offset_a = selection->m_start.m_offset;
@@ -812,23 +814,40 @@ int32_t blz_text_excise_selection(blz_text_t* text, blz_text_info_t* info, const
 		}
 	}
 
-
 	return 0;
 }
 
-int32_t blz_text_cut_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection)
+int32_t blz_text_excise_char(blz_text_t* text, blz_text_info_t* info)
 {
-	if (!text || !selection)
+	if (!text || !info)
+	{
+		return -1;
+	}
+
+	info->m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_SELECTED;
+	info->m_selection.m_start = (blz_text_selection_point_t){ info->m_cursor_line, info->m_cursor_offset };
+	info->m_selection.m_end = (blz_text_selection_point_t){ info->m_cursor_line, info->m_cursor_offset + 1 };
+
+	int32_t excised = blz_text_excise(text, info);
+
+	info->m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+
+	return excised;
+}
+
+int32_t blz_text_cut(blz_text_t* text, blz_text_info_t* info)
+{
+	if (!text)
 	{
 		return -1;
 	}
 	
-	if (blz_text_copy_selection(text, info, selection) != 0)
+	if (blz_text_copy(text, info) != 0)
 	{
 		return -1;
 	}
 
-	if (blz_text_excise_selection(text, info, selection) != 0)
+	if (blz_text_excise(text, info) != 0)
 	{
 		return -1;
 	}
@@ -936,15 +955,21 @@ static ALLEGRO_USTR* blz_text_copy_different_line(const blz_text_t* text, const 
 	return ustr;
 }
 
-int32_t blz_text_copy_selection(const blz_text_t* text, const blz_text_info_t* info, const blz_text_selection_t* selection)
+int32_t blz_text_copy(const blz_text_t* text, const blz_text_info_t* info)
 {
-	char* result = NULL;
 	ALLEGRO_USTR* ustr = NULL;
 
-	if (!text || !selection)
+	if (!text || !info)
 	{
 		return -1;
 	}
+
+	if (info->m_selection.m_type == BLAZE_TEXT_SELECTION_TYPE_NONE)
+	{
+		return 0;
+	}
+
+	const blz_text_selection_t* selection = &info->m_selection;
 
 	const blz_text_selection_point_t* a = &selection->m_start;
 	const blz_text_selection_point_t* b = &selection->m_end;
@@ -970,26 +995,13 @@ int32_t blz_text_copy_selection(const blz_text_t* text, const blz_text_info_t* i
 		return -1;
 	}
 
-	result = al_malloc(al_ustr_size(ustr) + 1);
-
-	if (!result)
-	{
-		al_ustr_free(ustr);
-		return -1;
-	}
-
-	memcpy(result, al_cstr(ustr), al_ustr_size(ustr));
-	result[al_ustr_size(ustr)] = '\0';
-	al_ustr_free(ustr);
-
 	ALLEGRO_DISPLAY* current_display = al_get_current_display();
 
 	if (current_display)
 	{
-		al_set_clipboard_text(current_display, result);
+		al_set_clipboard_text(current_display, al_cstr(ustr));
 	}
-
-	al_free(result);
+	al_ustr_free(ustr);
 
 	return 0;
 }
@@ -1038,7 +1050,7 @@ static int32_t _blz_text_extract_hbt(blz_text_t** text, blz_text_node_t** head, 
 	return 0;
 }
 
-int32_t blz_text_paste_cursor(blz_text_t* text, blz_text_info_t* info)
+static int32_t _blz_text_paste_cursor(blz_text_t* text, blz_text_info_t* info)
 {
 	blz_text_node_t* head = NULL;
 	blz_text_node_t* body = NULL;
@@ -1152,16 +1164,44 @@ int32_t blz_text_paste_cursor(blz_text_t* text, blz_text_info_t* info)
 	return 0;
 }
 
-int32_t blz_text_paste_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection)
+int32_t blz_text_paste(blz_text_t* text, blz_text_info_t* info)
 {
-	int32_t exise_result = blz_text_excise_selection(text, info, selection);
-	
-	if (exise_result != 0)
+	if (!text || !info)
 	{
-		return exise_result;
+		return -1;
 	}
 
-	return blz_text_paste_cursor(text, info);
+	if (info->m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
+	{
+		int32_t exise_result = blz_text_excise(text, info);
+
+		if (exise_result != 0)
+		{
+			return exise_result;
+		}
+	}
+
+	return _blz_text_paste_cursor(text, info);
+}
+
+int32_t blz_text_insert_char(blz_text_t* text, blz_text_info_t* info, int32_t value)
+{
+	if (value >= 0x20)
+	{
+		if (info->m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
+		{
+			int32_t excised = blz_text_excise(text, info);			
+
+			(void)excised; // Silence unused variable warning
+		}
+
+		al_ustr_insert_chr(blz_text_get_line(text, info->m_cursor_line)->m_text, info->m_cursor_offset, value);
+		++info->m_cursor_offset;
+
+		return 0;
+	}
+
+	return -1;
 }
 
 int32_t blz_text_select_all(const blz_text_t* text, blz_text_info_t* info)

@@ -119,14 +119,14 @@ int32_t sf_widget_shader_build(const blz_text_t* text, const sf_uniform_t* unifo
 
 	if (!shader_code)
 	{
-		DO_LOG("ERROR: Failed to convert shader code to ustr");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to convert shader code to ustr");
 		return -1;
 	}
 
 	data->m_shader = sf_shader_generate(shader_code, uniforms);
 	if (!data->m_shader)
 	{
-		DO_LOG("ERROR: Failed to create shader");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create shader");
 		al_ustr_free(shader_code);
 		return -1;
 	}

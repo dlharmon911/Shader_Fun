@@ -15,6 +15,7 @@
 
 
 #include "blaze/blz_log.h"
+#include "blaze/blz_file.h"
 #include "blaze/blz_byte.h"
 #include "blaze/blz_color.h"
 #include "blaze/blz_input.h"

@@ -22,11 +22,11 @@ static bool _sf_init_addon(const char* name, bool (*init_func)(void))
 {
 	if (!init_func())
 	{
-		DO_LOG("ERROR: Failed to initialize %s addon", name);
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to initialize %s addon", name);
 		return false;
 	}
 
-	DO_LOG("INFO: Initialized %s addon", name);
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Initialized %s addon", name);
 	return true;
 }
 
@@ -56,25 +56,25 @@ static int32_t sf_init( sf_data_t* data)
 
 	if (!al_install_keyboard())
 	{
-		DO_LOG("ERROR: Failed to initialize keyboard");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to initialize keyboard");
 		return -1;
 	}
-	DO_LOG("INFO: Initialized keyboard");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Initialized keyboard");
 
 	if (!al_install_mouse())
 	{
-		DO_LOG("ERROR: Failed to initialize mouse");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to initialize mouse");
 		return -1;
 	}
-	DO_LOG("INFO: Initialized mouse");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Initialized mouse");
 
 	data->m_input->m_keyboard.m_buffer = al_ustr_new("");
 	if (!data->m_input->m_keyboard.m_buffer)
 	{
-		DO_LOG("ERROR: Failed to create keyboard buffer");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create keyboard buffer");
 		return -1;
 	}
-	DO_LOG("INFO: Created keyboard buffer");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Created keyboard buffer");
 
 
 	int32_t flags = al_get_new_display_flags();
@@ -87,10 +87,10 @@ static int32_t sf_init( sf_data_t* data)
 	data->m_display = al_create_display((int32_t)SF_DIPLAY_WIDTH, (int32_t)SF_DIPLAY_HEIGHT);
 	if (!data->m_display)
 	{
-		DO_LOG("ERROR: Failed to create display");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create display");
 		return -1;
 	}
-	DO_LOG("INFO: Created display");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Created display");
 
 	al_clear_to_color(al_map_rgb(0x16, 0x16, 0x21));
 	al_flip_display();
@@ -98,18 +98,18 @@ static int32_t sf_init( sf_data_t* data)
 	data->m_event_queue = al_create_event_queue();
 	if (!data->m_event_queue)
 	{
-		DO_LOG("ERROR: Failed to create event queue");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create event queue");
 		return -1;
 	}
-	DO_LOG("INFO: Created event queue");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Created event queue");
 
 	data->m_timer = al_create_timer(1.0 / 60.0);
 	if (!data->m_timer)
 	{
-		DO_LOG("ERROR: Failed to create timer");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create timer");
 		return -1;
 	}
-	DO_LOG("INFO: Created timer");
+	DO_LOG(BLAZE_LOG_LEVEL_INFO, "Created timer");
 
 	al_register_event_source(data->m_event_queue, al_get_display_event_source(data->m_display));
 	al_register_event_source(data->m_event_queue, al_get_timer_event_source(data->m_timer));
@@ -118,17 +118,42 @@ static int32_t sf_init( sf_data_t* data)
 
 	if (blz_font_cache_load(&data->m_dialog_data->m_fonts) != 0)
 	{
-		DO_LOG("ERROR: Failed to load font cache");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to load font cache");
 		return -1;
 	}
 
-	uint32_t dark_color = blz_color_get_rgba(BLAZE_COLOR_NAVAJO_WHITE);
-	blz_frame_set_theme_color(0xffffffff, dark_color);
+	for (int32_t i = 0; i < BLAZE_FONT_ID_COUNT; ++i)
+	{
+		char filename[256] = { 0 };
+		const ALLEGRO_FONT* font = data->m_dialog_data->m_fonts[i].m_font;
+
+		ALLEGRO_BITMAP* bitmap = al_create_bitmap(800, 400);
+		if (!bitmap)
+		{
+			DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create bitmap for font rendering");
+			blz_font_cache_unload(&data->m_dialog_data->m_fonts);
+			return -1;
+		}
+		ALLEGRO_BITMAP* target = al_get_target_bitmap();
+		al_set_target_bitmap(bitmap);
+		al_clear_to_color(al_map_rgb(0, 0, 0));
+		//al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "The quick brown fox jumps over the lazy dog!");
+		sprintf_s(filename, sizeof(filename), "assets/bitmap_%d.png", i);
+
+		al_set_target_bitmap(target);
+
+		al_save_bitmap(filename, bitmap);
+		al_destroy_bitmap(bitmap);
+	}
+
+
+	uint32_t theme_color = blz_color_get_rgba(BLAZE_COLOR_NAVAJO_WHITE);
+	blz_frame_set_theme_color(0xffffffff, theme_color);
 
 	data->m_dialog = blz_dialog_create(0.0f, 0.0f, (float)al_get_display_width(data->m_display), (float)al_get_display_height(data->m_display), data->m_dialog_data, sf_dialog_main_get_vtable());
 	if (!data->m_dialog)
 	{
-		DO_LOG("ERROR: Failed to create dialog");
+		DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to create dialog");
 		return -1;
 	}
 
@@ -146,7 +171,7 @@ static void sf_deinit( sf_data_t* data)
 	{		
 		blz_dialog_destroy(data->m_dialog, data->m_dialog_data);
 		data->m_dialog = NULL;
-		DO_LOG("INFO: Destroyed dialog");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Destroyed dialog");
 	}
 
 	blz_font_cache_unload(&data->m_dialog_data->m_fonts);
@@ -156,49 +181,49 @@ static void sf_deinit( sf_data_t* data)
 		al_stop_timer(data->m_timer);
 		al_destroy_timer(data->m_timer);
 		data->m_timer = NULL;
-		DO_LOG("INFO: Destroyed timer");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Destroyed timer");
 	}
 
 	if (data->m_event_queue)
 	{
 		al_destroy_event_queue(data->m_event_queue);
 		data->m_event_queue = NULL;
-		DO_LOG("INFO: Destroyed event queue");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Destroyed event queue");
 	}
 
 	if (data->m_display)
 	{
 		al_destroy_display(data->m_display);
 		data->m_display = NULL;
-		DO_LOG("INFO: Destroyed display");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Destroyed display");
 	}
 
 	if (data->m_input->m_keyboard.m_buffer)
 	{
 		al_ustr_free(data->m_input->m_keyboard.m_buffer);
 		data->m_input->m_keyboard.m_buffer = NULL;
-		DO_LOG("INFO: Destroyed keyboard buffer");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Destroyed keyboard buffer");
 	}
 
 	if (al_is_image_addon_initialized())
 	{
 		al_shutdown_image_addon();
-		DO_LOG("INFO: Shutdown image addon");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Shutdown image addon");
 	}
 	if (al_is_ttf_addon_initialized())
 	{
 		al_shutdown_ttf_addon();
-		DO_LOG("INFO: Shutdown ttf addon");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Shutdown ttf addon");
 	}
 	if (al_is_font_addon_initialized())
 	{
 		al_shutdown_font_addon();
-		DO_LOG("INFO: Shutdown font addon");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Shutdown font addon");
 	}
 	if (al_is_primitives_addon_initialized())
 	{
 		al_shutdown_primitives_addon();
-		DO_LOG("INFO: Shutdown primitives addon");
+		DO_LOG(BLAZE_LOG_LEVEL_INFO, "Shutdown primitives addon");
 	}
 
 #ifdef _DEBUG
@@ -379,7 +404,7 @@ int32_t main(int32_t argc, char* argv[])
 		.m_time_start = 0.0f,
 		.m_time_current = 0.0f,
 		.m_focus_widget = NULL,
-		.m_fonts = { { NULL }, { NULL }, { NULL } },
+		.m_fonts = { { NULL }, { NULL }},// , { NULL } },
 		.m_code = SF_DIALOG_CODE_NONE,
 		.m_text_flags = SF_TEXT_FLAG_CLEAN,
 		.m_fullscreen = false

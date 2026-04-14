@@ -24,6 +24,7 @@ static int32_t sf_widget_console_initialize(blz_widget_t* widget, sf_dialog_data
 	data->m_console_data.m_info.m_vertical_padding = 5.0f;
 	data->m_console_data.m_info.m_line_spacing = 2.0f;
 	data->m_console_data.m_info.m_color = al_map_rgb(0, 0, 0);
+	data->m_editor_data.m_info.m_selection = (blz_text_selection_t){ { 0, 0}, { 0, 0 }, BLAZE_TEXT_SELECTION_TYPE_NONE };
 
 	return 0;
 }

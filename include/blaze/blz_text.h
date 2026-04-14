@@ -70,11 +70,6 @@ size_t blz_text_get_line_count(const blz_text_t* text);
 blz_text_node_t* blz_text_get_line(const blz_text_t* text, size_t index);
 ALLEGRO_USTR* blz_text_to_ustr(const blz_text_t* text, const char* new_line);
 char* blz_text_to_cstr(const blz_text_t* text, const char* new_line);
-int32_t blz_text_excise_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
-int32_t blz_text_cut_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
-int32_t blz_text_copy_selection(const blz_text_t* text, const blz_text_info_t* info, const blz_text_selection_t* selection);
-int32_t blz_text_paste_cursor(blz_text_t* text, blz_text_info_t* info);
-int32_t blz_text_paste_selection(blz_text_t* text, blz_text_info_t* info, const blz_text_selection_t* selection);
 int32_t blz_text_select_all(const blz_text_t* text, blz_text_info_t* info);
 blz_text_node_t* blz_text_create_node();
 void blz_text_node_destroy(blz_text_node_t* node);
@@ -84,6 +79,15 @@ bool blz_text_merge(blz_text_node_t* a, blz_text_node_t** b);
 bool blz_text_split(blz_text_node_t** node, int32_t offset);
 void blz_text_draw(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info);
 void blz_text_draw_highlighted(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, const blz_text_highlighter_t* highlighter);
+
+
+int32_t blz_text_excise(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_excise_char(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_cut(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_copy(const blz_text_t* text, const blz_text_info_t* info);
+int32_t blz_text_paste(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_insert_char(blz_text_t* text, blz_text_info_t* info, int32_t value);
+
 
 
 #endif // !_GUARD_BLAZE_TEXT_H_

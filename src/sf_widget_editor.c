@@ -389,6 +389,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     data->m_editor_data.m_info.m_vertical_padding = 5.0f;
     data->m_editor_data.m_info.m_line_spacing = 2.0f;
     data->m_editor_data.m_info.m_color = al_map_rgb(0, 0, 0);
+    data->m_editor_data.m_info.m_selection = (blz_text_selection_t){ { 0, 0}, { 0, 0 }, BLAZE_TEXT_SELECTION_TYPE_NONE };
     
 
     return 0;
@@ -479,19 +480,23 @@ static bool sf_widget_editor_on_event(blz_widget_t* widget, ALLEGRO_EVENT event,
     {
         case ALLEGRO_EVENT_KEY_CHAR:
         {
-            if (event.keyboard.keycode >= ALLEGRO_KEY_A &&
-                event.keyboard.keycode <= ALLEGRO_KEY_Z &&
-                (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) &&
-                sf_widget_editor_control_key_func(widget, &event, data))
+            if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL)
             {
-                sf_widget_editor_scroll_to_cursor(widget, data);
-                return true;
+                if (event.keyboard.keycode >= ALLEGRO_KEY_A &&
+                    event.keyboard.keycode <= ALLEGRO_KEY_Z &&
+                    sf_widget_editor_control_key_func(widget, &event, data))
+                {
+                    sf_widget_editor_scroll_to_cursor(widget, data);
+                    return true;
+                }
             }
-
-            if (sf_widget_editor_key_func(widget, &event, data))
+            else
             {
-                sf_widget_editor_scroll_to_cursor(widget, data);
-                return true;
+                if (sf_widget_editor_key_func(widget, &event, data))
+                {
+                    sf_widget_editor_scroll_to_cursor(widget, data);
+                    return true;
+                }
             }
         } break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:

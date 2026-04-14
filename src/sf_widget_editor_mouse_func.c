@@ -35,7 +35,16 @@ static bool sf_widget_editor_mouse_up(blz_widget_t* widget, ALLEGRO_EVENT event,
     if (data->m_editor_data.m_info.m_selection.m_type == BLAZE_TEXT_SELECTION_TYPE_START_GRABBED)
     {
         sf_set_line_selection_point(widget, data, event, &data->m_editor_data.m_info.m_selection.m_end);
-		data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_SELECTED;
+
+        if (data->m_editor_data.m_info.m_selection.m_end.m_line == data->m_editor_data.m_info.m_selection.m_start.m_line &&
+            data->m_editor_data.m_info.m_selection.m_end.m_offset == data->m_editor_data.m_info.m_selection.m_start.m_offset)
+        {
+            data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+        }
+        else
+        {
+            data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_SELECTED;
+        }
 	}
 
     return true;

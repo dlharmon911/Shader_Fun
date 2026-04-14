@@ -5,6 +5,13 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+enum BLAZE_LOG_LEVEL
+{
+	BLAZE_LOG_LEVEL_INFO,
+	BLAZE_LOG_LEVEL_ERROR,
+	BLAZE_LOG_LEVEL_COUNT
+};
+
 void blz_log_open(const char* filename);
 bool blz_log_is_open();
 void blz_log_close();
@@ -27,12 +34,15 @@ void blz_log_print_long_double(long double value);
 void blz_log_print_char(char c);
 void blz_log_print_vargs(const char* const format, va_list va_arg_list);
 void blz_log_printf(const char* const format, ...);
+void blz_log_level(int32_t level, const char* filename, int32_t line_number, const char* format, ...);
 
 #ifdef _DEBUG
-#define DO_LOG(format, ...) blz_log_printf("Error: " format "\nFile: %s\nLine: %d\n", __VA_ARGS__, __FILE__, __LINE__)
+#define DO_LOG(level, format, ...) blz_log_level(level, __FILE__, __LINE__, format, __VA_ARGS__)
 #else
 #define DO_LOG(format, ...)
 #endif
+
+
 
 #endif // !_GUARD_BLAZE_LOG_H__
 

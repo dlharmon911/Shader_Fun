@@ -76,6 +76,7 @@
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
     <Allegro_AddonFont>true</Allegro_AddonFont>
     <Allegro_AddonColor>true</Allegro_AddonColor>
+    <Allegro_AddonMemfile>true</Allegro_AddonMemfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Allegro_AddonImage>true</Allegro_AddonImage>
@@ -83,6 +84,7 @@
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
     <Allegro_AddonFont>true</Allegro_AddonFont>
     <Allegro_AddonColor>true</Allegro_AddonColor>
+    <Allegro_AddonMemfile>true</Allegro_AddonMemfile>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -156,7 +158,10 @@
     <ClInclude Include="include\blaze\blz_common.h" />
     <ClInclude Include="include\blaze\blz_darray.h" />
     <ClInclude Include="include\blaze\blz_dialog.h" />
+    <ClInclude Include="include\blaze\blz_file.h" />
     <ClInclude Include="include\blaze\blz_font.h" />
+    <ClInclude Include="include\blaze\blz_font_bold.h" />
+    <ClInclude Include="include\blaze\blz_font_regular.h" />
     <ClInclude Include="include\blaze\blz_frame.h" />
     <ClInclude Include="include\blaze\blz_input.h" />
     <ClInclude Include="include\blaze\blz_log.h" />
@@ -180,6 +185,7 @@
     <ClCompile Include="src\blaze\blz_color.c" />
     <ClCompile Include="src\blaze\blz_darray.c" />
     <ClCompile Include="src\blaze\blz_dialog.c" />
+    <ClCompile Include="src\blaze\blz_file.c" />
     <ClCompile Include="src\blaze\blz_font.c" />
     <ClCompile Include="src\blaze\blz_frame.c" />
     <ClCompile Include="src\blaze\blz_input.c" />

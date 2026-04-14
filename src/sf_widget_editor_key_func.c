@@ -11,7 +11,7 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
 
     if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
     {
-		int32_t excised = blz_text_excise_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+		int32_t excised = blz_text_excise(data->m_editor_data.m_text, &data->m_editor_data.m_info);
         data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
 		data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
 
@@ -21,8 +21,7 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
     }
 
     if (data->m_editor_data.m_info.m_cursor_offset == 0)
-    {
-        if (data->m_editor_data.m_info.m_cursor_line == 0)
+    {        if (data->m_editor_data.m_info.m_cursor_line == 0)
         {
             return true;
         }
@@ -40,15 +39,11 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
     }
     else
     {
-        blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
-
-        if (!current_line)
-        {
-            data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-            return true;
-        }
-        al_ustr_remove_chr(current_line->m_text, data->m_editor_data.m_info.m_cursor_offset - 1);
         --data->m_editor_data.m_info.m_cursor_offset;
+		int32_t excised = blz_text_excise_char(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+
+		(void)excised; // Silence unused variable warning
+
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
         return true;
     }
@@ -65,7 +60,7 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 
     if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
     {
-        int32_t excised = blz_text_excise_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+        int32_t excised = blz_text_excise(data->m_editor_data.m_text, &data->m_editor_data.m_info);
         data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
 
@@ -108,11 +103,9 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
     }
     else
     {
-        blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
-        if (current_line)
-        {
-            al_ustr_remove_chr(current_line->m_text, data->m_editor_data.m_info.m_cursor_offset);
-        }
+        int32_t excised = blz_text_excise_char(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+
+        (void)excised; // Silence unused variable warning
 
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
         return true;
@@ -270,21 +263,19 @@ static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    if (event.keyboard.unichar >= 0x20)
+	int32_t result = blz_text_insert_char(data->m_editor_data.m_text, &data->m_editor_data.m_info, event.keyboard.unichar);
+
+    if (result == 0)
     {
-        al_ustr_insert_chr(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text, data->m_editor_data.m_info.m_cursor_offset, event.keyboard.unichar);
-        ++data->m_editor_data.m_info.m_cursor_offset;
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+	}
 
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t cut = blz_text_cut_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+    int32_t cut = blz_text_cut(data->m_editor_data.m_text, &data->m_editor_data.m_info);
 
     (void)cut; // Silence unused variable warning
 
@@ -295,7 +286,7 @@ static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEG
 
 static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t copied = blz_text_copy_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+	int32_t copied = blz_text_copy(data->m_editor_data.m_text, &data->m_editor_data.m_info);
 
 	(void)copied; // Silence unused variable warning
 
@@ -304,7 +295,7 @@ static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLE
 
 static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t pasted = blz_text_paste_selection(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_info.m_selection);
+	int32_t pasted = blz_text_paste(data->m_editor_data.m_text, &data->m_editor_data.m_info);
 
 	(void)pasted; // Silence unused variable warning
 
@@ -334,7 +325,7 @@ static bool sf_widget_editor_process_control_key_save(blz_widget_t* widget, ALLE
 
 typedef bool (*sf_widget_editor_process_key_func_t)(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data);
 
-static const sf_widget_editor_process_key_func_t sf_widget_editor_process_key_funcs[] =
+static const sf_widget_editor_process_key_func_t sf_widget_editor_process_key_funcs[ALLEGRO_KEY_MAX] =
 {
 	[ALLEGRO_KEY_ESCAPE] = sf_widget_editor_process_key_escape,
     [ALLEGRO_KEY_BACKSPACE] = sf_widget_editor_process_key_backspace,
@@ -351,7 +342,7 @@ static const sf_widget_editor_process_key_func_t sf_widget_editor_process_key_fu
     [ALLEGRO_KEY_PGDN] = sf_widget_editor_process_key_pgdn,
 };
 
-static const sf_widget_editor_process_key_func_t sf_widget_editor_process_control_key_funcs[] =
+static const sf_widget_editor_process_key_func_t sf_widget_editor_process_control_key_funcs[ALLEGRO_KEY_MAX] =
 {
     [ALLEGRO_KEY_C] = sf_widget_editor_process_control_key_copy,
 	[ALLEGRO_KEY_S] = sf_widget_editor_process_control_key_save,
@@ -397,10 +388,6 @@ bool sf_widget_editor_control_key_func(blz_widget_t* widget, const ALLEGRO_EVENT
     if (func)
     {
         return func(widget, *event, (sf_dialog_data_t*)data);
-    }
-    else
-    {
-		return sf_widget_editor_process_key_default(widget, *event, (sf_dialog_data_t*)data);
     }
 
     return false;

@@ -257,3 +257,30 @@ void blz_log_printf(const char* const format, ...)
 	blz_log_print_vargs(format, va_arg_list);
 	va_end(va_arg_list);
 }
+
+void blz_log_level(int32_t level, const char* filename, int32_t line_number, const char* format, ...)
+{
+	static va_list va_arg_list;
+	if (!format)
+	{
+		return;
+	}
+	va_start(va_arg_list, format);
+	switch (level)
+	{
+	case BLAZE_LOG_LEVEL_INFO:
+		blz_log_printf("Info: ");
+		blz_log_print_vargs(format, va_arg_list);
+		blz_log_printf("\n");
+		break;
+	case BLAZE_LOG_LEVEL_ERROR:
+		blz_log_printf("Error: ");
+		blz_log_print_vargs(format, va_arg_list);
+		blz_log_printf("\nFile: %s\nLine: %d\n", filename, line_number);
+		break;
+	default:
+		break;
+	}
+	va_end(va_arg_list);
+	blz_log_flush();
+}
