@@ -4,6 +4,8 @@
 
 static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
+    int32_t edit_type = BLAZE_TEXT_EDIT_OPTION_NONE;
+
     if (!data->m_editor_data.m_text)
     {
         return true;
@@ -11,48 +13,37 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
 
     if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
     {
-		int32_t excised = blz_text_excise(data->m_editor_data.m_text, &data->m_editor_data.m_info);
-        data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
-		data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-
-		(void)excised; // Silence unused variable warning
-
-		return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION;
     }
-
-    if (data->m_editor_data.m_info.m_cursor_offset == 0)
-    {        if (data->m_editor_data.m_info.m_cursor_line == 0)
+    else if (data->m_editor_data.m_info.m_cursor_offset == 0)
+    {        
+        if (data->m_editor_data.m_info.m_cursor_line == 0)
         {
             return true;
         }
 
-        blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
-        blz_text_node_t* previous_line = blz_text_get_previous_line(data->m_editor_data.m_text, current_line);
-        int32_t prev_length = (int32_t)al_ustr_size(previous_line->m_text);
-
-        blz_text_merge(previous_line, &current_line);
-
-        --data->m_editor_data.m_info.m_cursor_line;
-        data->m_editor_data.m_info.m_cursor_offset = prev_length;
-        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-        return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_MERGE_LINE;
     }
     else
     {
         --data->m_editor_data.m_info.m_cursor_offset;
-		int32_t excised = blz_text_excise_char(data->m_editor_data.m_text, &data->m_editor_data.m_info);
-
-		(void)excised; // Silence unused variable warning
-
-        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-        return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    return false;
+    int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, edit_type, 0);
+
+    (void)edit_result; // Silence unused variable warning
+
+    data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+    return true;
 }
 
 static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
+	int32_t edit_type = BLAZE_TEXT_EDIT_OPTION_NONE;
+
     if (!data->m_editor_data.m_text)
     {
         return true;
@@ -60,58 +51,35 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 
     if (data->m_editor_data.m_info.m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
     {
-        int32_t excised = blz_text_excise(data->m_editor_data.m_text, &data->m_editor_data.m_info);
-        data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
-        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-
-        (void)excised; // Silence unused variable warning
-
-        return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION;
     }
-
-    if (data->m_editor_data.m_info.m_cursor_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text))
+    else if (data->m_editor_data.m_info.m_cursor_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text))
     {
-        blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
-        blz_text_node_t* next_line = blz_text_get_line(data->m_editor_data.m_text, (size_t)(data->m_editor_data.m_info.m_cursor_line + 1));
+        const blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
 
-        if (!current_line || !next_line)
+        if (!current_line->m_next)
         {
-            data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
             return true;
-        }
+		}
 
-        if (al_ustr_size(current_line->m_text) == 0)
-        {
-            blz_text_node_t* prev = blz_text_get_previous_line(data->m_editor_data.m_text, current_line);
+        ++data->m_editor_data.m_info.m_cursor_line;
+        data->m_editor_data.m_info.m_cursor_offset = 0;
 
-            if (prev)
-            {
-                prev->m_next = next_line;
-            }
-            else
-            {
-                data->m_editor_data.m_text->m_head = next_line;
-            }
-
-            data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-            return true;
-        }
-
-        blz_text_merge(current_line, &next_line);
-        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-        return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_MERGE_LINE;
     }
     else
     {
-        int32_t excised = blz_text_excise_char(data->m_editor_data.m_text, &data->m_editor_data.m_info);
-
-        (void)excised; // Silence unused variable warning
-
-        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-        return true;
+		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    return false;
+    int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, edit_type, 0);
+
+    (void)edit_result; // Silence unused variable warning
+
+    data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+
+    return true;
 }
 
 static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
@@ -121,8 +89,12 @@ static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT 
         return true;
     }
     --data->m_editor_data.m_info.m_cursor_line;
-    int32_t line_length = (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text);
-    if (data->m_editor_data.m_info.m_cursor_offset > line_length)
+
+    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+
+    int32_t line_length = (int32_t)al_ustr_size(line);
+
+    if (data->m_editor_data.m_info.m_cursor_offset >= line_length)
     {
         data->m_editor_data.m_info.m_cursor_offset = line_length;
     }
@@ -131,16 +103,24 @@ static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT 
 
 static bool sf_widget_editor_process_key_down(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    if (data->m_editor_data.m_info.m_cursor_line == (int32_t)blz_text_get_line_count(data->m_editor_data.m_text) - 1)
+	int32_t line_count = (int32_t)blz_text_get_line_count(data->m_editor_data.m_text);
+
+    if (data->m_editor_data.m_info.m_cursor_line >= line_count - 1)
     {
         return true;
     }
+
     ++data->m_editor_data.m_info.m_cursor_line;
-    int32_t line_length = (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text);
-    if (data->m_editor_data.m_info.m_cursor_offset > line_length)
+
+	const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+
+    int32_t line_length = (int32_t)al_ustr_size(line);
+
+    if (data->m_editor_data.m_info.m_cursor_offset >= line_length)
     {
         data->m_editor_data.m_info.m_cursor_offset = line_length;
     }
+
     return true;
 }
 
@@ -153,7 +133,12 @@ static bool sf_widget_editor_process_key_left(blz_widget_t* widget, ALLEGRO_EVEN
 			return true;
         }
         --data->m_editor_data.m_info.m_cursor_line;
-        data->m_editor_data.m_info.m_cursor_offset = (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text);
+
+        const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+
+        int32_t line_length = (int32_t)al_ustr_size(line);
+
+        data->m_editor_data.m_info.m_cursor_offset = line_length;
     }
     else
     {
@@ -190,31 +175,27 @@ static bool sf_widget_editor_process_key_escape(blz_widget_t* widget, ALLEGRO_EV
 
 static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
-    int32_t size = (int32_t)al_ustr_size(current_line->m_text);
+	int32_t split_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, 0);
 
-    if (data->m_editor_data.m_info.m_cursor_offset == size)
-    {
-        blz_text_node_t* next_line = blz_text_get_next_line(data->m_editor_data.m_text, current_line);
-        current_line->m_next = blz_text_create_node();
-        current_line->m_next->m_next = next_line;
-    }
-    else
-    {
-        blz_text_split(&current_line, data->m_editor_data.m_info.m_cursor_offset);
-    }
+	(void)split_result; // Silence unused variable warning
 
-    ++data->m_editor_data.m_info.m_cursor_line;
-    data->m_editor_data.m_info.m_cursor_offset = 0;
+    data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
     data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-    
+
     return true;
 }
 
 static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    al_ustr_insert_cstr(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text, data->m_editor_data.m_info.m_cursor_offset, "    ");
-    data->m_editor_data.m_info.m_cursor_offset += 4;
+    const char tab_str[] = "    ";
+	blz_stringview_t tab_view = { tab_str, sizeof(tab_str) - 1 };
+
+	int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_TEXT, &tab_view);
+
+	(void)edit_result; // Silence unused variable warning
+
+    data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
     
     return true;
 }
@@ -263,7 +244,8 @@ static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t result = blz_text_insert_char(data->m_editor_data.m_text, &data->m_editor_data.m_info, event.keyboard.unichar);
+    int32_t c = event.keyboard.unichar;
+	int32_t result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, &c);
 
     if (result == 0)
     {
@@ -275,7 +257,7 @@ static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_E
 
 static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t cut = blz_text_cut(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+    int32_t cut = blz_text_cut_to_clipboard(data->m_editor_data.m_text, &data->m_editor_data.m_info);
 
     (void)cut; // Silence unused variable warning
 
@@ -286,7 +268,7 @@ static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEG
 
 static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t copied = blz_text_copy(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+	int32_t copied = blz_text_copy_to_clipboard(data->m_editor_data.m_text, &data->m_editor_data.m_info);
 
 	(void)copied; // Silence unused variable warning
 
@@ -295,7 +277,7 @@ static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLE
 
 static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t pasted = blz_text_paste(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+	int32_t pasted = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD, 0);
 
 	(void)pasted; // Silence unused variable warning
 

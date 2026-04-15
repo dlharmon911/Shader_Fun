@@ -13,7 +13,6 @@ enum BLAZE_FONT_ID
 
 typedef struct blz_font_tag_t
 {
-	ALLEGRO_FILE* m_file;
 	ALLEGRO_FONT* m_font;
 	int32_t m_size;
 } blz_font_t;

@@ -81,12 +81,23 @@ void blz_text_draw(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t
 void blz_text_draw_highlighted(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, const blz_text_highlighter_t* highlighter);
 
 
-int32_t blz_text_excise(blz_text_t* text, blz_text_info_t* info);
-int32_t blz_text_excise_char(blz_text_t* text, blz_text_info_t* info);
-int32_t blz_text_cut(blz_text_t* text, blz_text_info_t* info);
-int32_t blz_text_copy(const blz_text_t* text, const blz_text_info_t* info);
-int32_t blz_text_paste(blz_text_t* text, blz_text_info_t* info);
-int32_t blz_text_insert_char(blz_text_t* text, blz_text_info_t* info, int32_t value);
+int32_t blz_text_cut_to_clipboard(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_copy_to_clipboard(const blz_text_t* text, const blz_text_info_t* info);
+
+enum BLAZE_TEXT_EDIT_OPTIONS
+{
+	BLAZE_TEXT_EDIT_OPTION_NONE,
+	BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION,
+	BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR,
+	BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD,
+	BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR,
+	BLAZE_TEXT_EDIT_OPTION_INSERT_TEXT,
+	BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE,
+	BLAZE_TEXT_EDIT_OPTION_MERGE_LINE,
+	BLAZE_TEXT_EDIT_OPTION_COUNT
+};
+
+int32_t blz_text_edit(blz_text_t* text, blz_text_info_t* info, int32_t option, const void* value);
 
 
 
