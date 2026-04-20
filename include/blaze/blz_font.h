@@ -5,8 +5,8 @@
 
 enum BLAZE_FONT_ID
 {
-	BLAZE_FONT_ID_EDITOR_REGULAR,
-	BLAZE_FONT_ID_EDITOR_BOLD,
+	BLAZE_FONT_ID_EDITOR,
+	BLAZE_FONT_ID_CONSOLE,
 	BLAZE_FONT_ID_UNIFORM,
 	BLAZE_FONT_ID_COUNT
 };
@@ -15,11 +15,14 @@ typedef struct blz_font_tag_t
 {
 	ALLEGRO_FONT* m_font;
 	int32_t m_size;
+	float m_char_width;
 } blz_font_t;
 
 typedef blz_font_t blz_font_cache_t[BLAZE_FONT_ID_COUNT];
 
 int32_t blz_font_cache_load(blz_font_cache_t* cache);
 void blz_font_cache_unload(blz_font_cache_t* cache);
+void blz_font_increment_size(blz_font_cache_t* cache, int32_t id);
+void blz_font_decrement_size(blz_font_cache_t* cache, int32_t id);
 
 #endif // !_GUARD_BLAZE_FONT_H_

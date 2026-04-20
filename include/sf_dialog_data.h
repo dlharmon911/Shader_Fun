@@ -8,9 +8,9 @@
 #include "sf_widget_shader.h"
 #include "sf_widget_uniforms.h"
 
-static const float SF_WIDGET_CONSOLE_HEIGHT = 256.0f;
-static const float SF_WIDGET_SHADER_WIDTH = 400.0f;
-static const float SF_WIDGET_SHADER_HEIGHT = 300.0f;
+static const float SF_WIDGET_CONSOLE_HEIGHT = 200.0f;
+static const float SF_WIDGET_SHADER_WIDTH = 600.0f;
+static const float SF_WIDGET_SHADER_HEIGHT = 400.0f;
 
 // code to send to parent dialog
 enum SF_DIALOG_CHILD_CODE

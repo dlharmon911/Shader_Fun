@@ -5,8 +5,8 @@
 
 typedef struct blz_stringview_tag_t
 {
-	const char* m_data;
 	size_t m_length;
+	const char* m_data;
 } blz_stringview_t;
 
 size_t blz_string_length(const char* cstr);

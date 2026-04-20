@@ -11,7 +11,7 @@ void* blz_darray_at(void* array, size_t index);
 const void* blz_darray_at_const(const void* array, size_t index);
 bool blz_darray_pushback(void** array, const void* element, size_t element_size);
 bool blz_darray_pop(void* array);
-
+void blz_darray_for_each(const void* array, void (*callback)(const void* element, size_t index, void* user_data), void* user_data);
 
 #endif // !_GUARD_BLAZE_DYNAMIC_ARRAY_H_
 

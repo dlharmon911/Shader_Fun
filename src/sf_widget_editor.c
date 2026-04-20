@@ -2,6 +2,8 @@
 #include "sf_widget_editor.h"
 #include "sf_dialog_data.h"
 #include "sf_text_highlighter.h"
+#include "sf_shader_snippets.h"
+
 
 static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_t* data)
 {
@@ -10,380 +12,17 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
         return -1;
     }
 
-    const char* mango_code = 
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 st = fragCoord.xy / u_resolution;\n"
-        "    fragColor = vec4(st.x, st.y, 0.0, 1.0);\n"
-        "}\n";
-    const char* red_pulse_code = 
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    float pulse = abs(sin(u_time));\n"
-        "    fragColor = vec4(pulse, 0.0, 0.0, 1.0);\n"
-        "}\n";
-    const char* plot_code = 
-        "vec3 colorA = vec3(0.149,0.141,0.912);\n"
-        "vec3 colorB = vec3(1.000, 0.833, 0.224);\n"
-        "\n"
-        "float plot(vec2 st, float pct) {\n"
-        "    return  smoothstep(pct - 0.01, pct, st.y) -\n"
-        "            smoothstep(pct, pct + 0.01, st.y);\n"
-        "}\n"
-        "\n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 st = fragCoord.xy / u_resolution.xy;\n"
-        "    vec3 color = vec3(0.0);\n"
-        "\n"
-        "    vec3 pct = vec3(st.x);\n"
-        "    // pct.r = smoothstep(0.0,1.0, st.x);\n"
-        "    // pct.g = sin(st.x*PI);\n"
-        "    // pct.b = pow(st.x,0.5);\n"
-        "\n"
-        "    color = mix(colorA, colorB, pct);\n"
-        "\n"
-        "    // Plot transition lines for each channel\n"
-        "    color = mix(color, vec3(1.0, 0.0, 0.0), plot(st, pct.r));\n"
-        "    color = mix(color, vec3(0.0, 1.0, 0.0), plot(st, pct.g));\n"
-        "    color = mix(color, vec3(0.0, 0.0, 1.0), plot(st, pct.b));\n"
-        "\n"
-        "    fragColor = vec4(color, 1.0);\n"
-        "}\n";
-
-    const char* hsb_code = 
-        "vec3 rgb2hsb( in vec3 c ){\n"
-        "    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n"
-        "    vec4 p = mix(vec4(c.bg, K.wz),\n"
-        "                 vec4(c.gb, K.xy),\n"
-        "                 step(c.b, c.g));\n"
-        "    vec4 q = mix(vec4(p.xyw, c.r),\n"
-        "                 vec4(c.r, p.yzx),\n"
-        "                 step(p.x, c.r));\n"
-        "    float d = q.x - min(q.w, q.y);\n"
-        "    float e = 1.0e-10;\n"
-        "    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),\n"
-        "                d / (q.x + e),\n"
-        "                q.x);\n"
-        "}\n"
-        "vec3 hsb2rgb( in vec3 c ){\n"
-        "    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),\n"
-        "                             6.0)-3.0)-1.0,\n"
-        "                     0.0,\n"
-        "                     1.0 );\n"
-        "    rgb = rgb*rgb*(3.0-2.0*rgb);\n"
-        "    return c.z * mix(vec3(1.0), rgb, c.y);\n"
-        "}\n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 st = fragCoord.xy/u_resolution;\n"
-        "    vec3 color = vec3(0.0);\n"
-        "    // We map x (0.0 - 1.0) to the hue (0.0 - 1.0)\n"
-        "    // And the y (0.0 - 1.0) to the brightness\n"
-        "    color = hsb2rgb(vec3(st.x,1.0,st.y));\n"
-        "    fragColor = vec4(color,1.0);\n"
-        "}\n";
-
-    const char* flame_code =
-        "float noise(vec3 p) //Thx to Las^Mercury\n"
-        "{\n"
-        "    vec3 i = floor(p);\n"
-        "    vec4 a = dot(i, vec3(1., 57., 21.)) + vec4(0., 57., 21., 78.);\n"
-        "    vec3 f = cos((p-i)*acos(-1.))*(-.5)+.5;\n"
-        "    a = mix(sin(cos(a)*a),sin(cos(1.+a)*(1.+a)), f.x);\n"
-        "    a.xy = mix(a.xz, a.yw, f.y);\n"
-        "    return mix(a.x, a.y, f.z);\n"
-        "}\n"
-        "float sphere(vec3 p, vec4 spr)\n"
-        "{\n"
-        "    return length(spr.xyz-p) - spr.w;\n"
-        "}\n"
-        "float flame(vec3 p)\n"
-        "{\n"
-        "    float d = sphere(p*vec3(1.,.5,1.), vec4(.0,-1.,.0,1.));\n"
-        "    return d + (noise(p+vec3(.0,u_time*2.,.0)) + noise(p*3.)*.5)*.25*(p.y) ;\n"
-        "}\n"
-        "float scene(vec3 p)\n"
-        "{\n"
-        "    return min(100.-length(p) , abs(flame(p)) );\n"
-        "}\n"
-        "vec4 raymarch(vec3 org, vec3 dir)\n"
-        "{\n"
-        "    float d = 0.0, glow = 0.0, eps = 0.02;\n"
-        "    vec3  p = org;\n"
-        "    bool glowed = false;\n"
-        "    \n"
-        "    for(int i=0; i<64; i++)\n"
-        "    {\n"
-        "        d = scene(p) + eps;\n"
-        "        p += d * dir;\n"
-        "        if( d>eps )\n"
-        "        {\n"
-        "            if(flame(p) < .0)\n"
-        "                glowed=true;\n"
-        "            if(glowed)\n"
-        "                   glow = float(i)/64.;\n"
-        "        }\n"
-        "    }\n"
-        "    return vec4(p,glow);\n"
-        "}\n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 v = -1.0 + 2.0 * fragCoord.xy / u_resolution;\n"
-        "    v.x *= u_resolution.x/u_resolution.y;\n"
-        "    \n"
-        "    vec3 org = vec3(0., -2., 4.);\n"
-        "    vec3 dir = normalize(vec3(v.x*1.6, -v.y, -1.5));\n"
-        "    \n"
-        "    vec4 p = raymarch(org, dir);\n"
-        "    float glow = p.w;\n"
-        "    \n"
-        "    vec4 col = mix(vec4(1.,.5,.1,1.), vec4(0.1,.5,1.,1.), p.y*.02+.4);\n"
-        "    \n"
-        "    fragColor = mix(vec4(0.), col, pow(glow*2.,4.));\n"
-        "    //fragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));\n"
-        "}\n";
-
-    const char* bubble_code = 
-    "#define NSHAPES 200.0\n"
-    "#define NPOINTS 100.0 // Reduced for performance; GLSL loops can be heavy\n"
-    "#define PI 3.14159265359\n"
-    "\n"
-    "// Simple HSB to RGB conversion\n"
-    "vec3 hsb2rgb(vec3 c) {\n"
-    "    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n"
-    "    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n"
-    "    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
-    "}\n"
-    "\n"
-    "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-    "{\n"
-    "    // Map screen coordinates to -2.0 to 2.0 range (matching your MAXY)\n"
-    "    vec2 uv = (fragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 4.0;\n"
-    "    float t = u_time * 0.2; // Slowed down DT\n"
-    "    float R = 2.0 * PI / NSHAPES;\n"
-    "    vec3 finalCol = vec3(0.0);\n"
-    "    float x = 0.0;\n"
-    "    float y = 0.0;\n"
-    "\n"
-    "    for (float i = 0.0; i < NSHAPES; i++) {\n"
-    "        float shape_t = R * i + t;\n"
-    "        \n"
-    "        for (float j = 0.0; j < NPOINTS; j++) {\n"
-    "            float ang_y = i + y;\n"
-    "            float ang_x = shape_t + x;\n"
-    "            \n"
-    "            x = sin(ang_y) + sin(ang_x);\n"
-    "            y = cos(ang_y) + cos(ang_x);\n"
-    "            \n"
-    "            // Check distance from pixel to current point (x, y)\n"
-    "            float dist = distance(uv, vec2(x, y));\n"
-    "            \n"
-    "            // Draw a soft \"glow\" point\n"
-    "            if (dist < 0.03) {\n"
-    "                vec3 pntCol = hsb2rgb(vec3(i / NSHAPES, 0.8, 0.9));\n"
-    "                finalCol += pntCol * (0.002 / dist); // Additive blending\n"
-    "            }\n"
-    "        }\n"
-    "    }\n"
-    "    fragColor = vec4(finalCol, 1.0);\n"
-    "}\n";
-    const char* plasma_code =
-        "// by Nikos Papadopoulos, 4rknova / 2016\n"
-        "// Specular highlights contributed by Shane\n"
-        " \n"
-        "// Enable specular highlight pass for added depth and shine\n"
-        "#define SPECULAR\n"
-        " \n"
-        "// Controls the overall zoom level of the plasma pattern\n"
-        "#define SCALE 1.0\n"
-        " \n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    float time = u_time;\n"
-        " \n"
-        "    // Compute the aspect ratio correction vector so the pattern\n"
-        "    // isn't stretched on non-square viewports\n"
-        "    vec2 aspectRatio = vec2(u_resolution.x / u_resolution.y, 1.0);\n"
-        " \n"
-        "    // Map fragment coordinates to a scaled, aspect-corrected UV space\n"
-        "    // and scroll the pattern over time to create movement\n"
-        "    vec2 uv = SCALE * fragCoord.xy / u_resolution.xy * aspectRatio * 4.0 + time * 0.3;\n"
-        " \n"
-        "    // Generate two oscillating phase values that evolve over time.\n"
-        "    // These drive the plasma's swirling motion by combining the\n"
-        "    // x and y axes with sin/cos pairs at different rates.\n"
-        "    float phaseVertical   = 0.1 + cos(uv.y + sin(0.148 - time)) + 2.4 * time;\n"
-        "    float phaseHorizontal = 0.9 + sin(uv.x + cos(0.628 + time)) - 0.7 * time;\n"
-        " \n"
-        "    // Radial distance from the origin. Adds circular symmetry\n"
-        "    // to the interference pattern\n"
-        "    float radialDist = length(uv);\n"
-        " \n"
-        "    // Combine the radial distance with both phase terms to produce\n"
-        "    // the final plasma interference value. The product of cos and sin\n"
-        "    // creates the characteristic banded, swirling look.\n"
-        "    float plasma = 7.0 * cos(radialDist + phaseHorizontal) \n"
-        "                       * sin(phaseVertical + phaseHorizontal);\n"
-        " \n"
-        "    // Map the scalar plasma value to RGB using cosine-based palette.\n"
-        "    // The offset vector (.2, .5, .9) shifts each channel's phase,\n"
-        "    // producing smooth color gradients across the pattern.\n"
-        "    fragColor = vec4(0.5 + 0.5 * cos(plasma + vec3(0.2, 0.5, 0.9)), 1.0);\n"
-        " \n"
-        "    #ifdef SPECULAR\n"
-        "    // Approximate a specular lighting pass using screen-space derivatives.\n"
-        "    // dFdx/dFdy estimate the color gradient between neighbouring fragments,\n"
-        "    // which serves as a proxy for surface normals on the plasma \"surface\".\n"
-        "    // A simple Phong-style specular term is then applied with a warm tint\n"
-        "    // to give the plasma a glossy, liquid appearance.\n"
-        "    vec3 surfaceNormal = normalize(vec3(\n"
-        "        length(dFdx(fragColor)),\n"
-        "        length(dFdy(fragColor)),\n"
-        "        0.5 / u_resolution.y\n"
-        "    ));\n"
-        "    float specularIntensity = pow(max(surfaceNormal.z, 0.0), 2.0);\n"
-        "    vec4 warmTint = vec4(1.0, 0.7, 0.4, 1.0);\n"
-        "    fragColor *= warmTint * specularIntensity + 0.75;\n"
-        "    #endif\n"
-        "}\n";
-    const char* mandelbrot_code = 
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 c = (fragCoord.xy - 0.5 * u_resolution) / u_resolution.y * 3.0 - vec2(0.5, 0.0);\n"
-        "    vec2 z = vec2(0.0);\n"
-        "    int iterations = 0;\n"
-        "    const int maxIterations = 100;\n"
-        "\n"
-        "    while (length(z) < 2.0 && iterations < maxIterations)\n"
-        "    {\n"
-        "        z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;\n"
-        "        iterations++;\n"
-        "    }\n"
-        "\n"
-        "    float t = float(iterations) / float(maxIterations);\n"
-        "    fragColor = vec4(vec3(t), 1.0);\n"
-        "}";
-    const char* perlin_noise_code = 
-        "float hash(vec2 p)\n"
-        "{\n"
-        "    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);\n"
-        "}\n"
-        "\n"
-        "float perlin(vec2 p)\n"
-        "{\n"
-        "    vec2 i = floor(p);\n"
-        "    vec2 f = fract(p);\n"
-        "\n"
-        "    float a = hash(i);\n"
-        "    float b = hash(i + vec2(1.0, 0.0));\n"
-        "    float c = hash(i + vec2(0.0, 1.0));\n"
-        "    float d = hash(i + vec2(1.0, 1.0));\n"
-        "\n"
-        "    vec2 u = f * f * (3.0 - 2.0 * f);\n"
-        "\n"
-        "    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;\n"
-        "}\n"
-        "\n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 uv = fragCoord.xy / u_resolution;\n"
-        "    float n = perlin(uv * 10.0 + u_time);\n"
-        "    fragColor = vec4(vec3(n), 1.0);\n"
-        "}";
-    const char* fractal_code = 
-        "precision highp float;\n\n"
-        "// Standard 3D rotation matrix\n"
-        "mat2 rot(float a) {\n"
-        "    float s = sin(a), c = cos(a);\n"
-        "    return mat2(c, -s, s, c);\n"
-        "}\n"
-        "// Distance to a line segment (the \"web\" strand)\n"
-        "float sdCapsule(vec3 p, vec3 a, vec3 b, float r) {\n"
-        "    vec3 pa = p - a, ba = b - a;\n"
-        "    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);\n"
-        "    return length(pa - ba * h) - r;\n"
-        "}\n"
-        "// The scene: A repeating lattice of web-like strands\n"
-        "float map(vec3 p) {\n"
-        "    // Infinite repetition\n"
-        "    vec3 grid = floor(p + 0.5);\n"
-        "    vec3 f = fract(p + 0.5) - 0.5;\n"
-        "    \n"
-        "    float d = 1e10;\n"
-        "    \n"
-        "    // Connect points in a 3x3x3 neighborhood to form a web\n"
-        "    for(int x = -1; x <= 1; x++) {\n"
-        "        for(int y = -1; y <= 1; y++) {\n"
-        "            for(int z = -1; z <= 1; z++) {\n"
-        "                vec3 tp = vec3(x, y, z);\n"
-        "                // Procedural jitter for the nodes\n"
-        "                vec3 node = tp + sin(u_time * 0.5 + (grid + tp) * 7.8) * 0.4;\n"
-        "                // Draw a thin strand to the center node\n"
-        "                d = min(d, sdCapsule(f, vec3(0), node, 0.015));\n"
-        "            }\n"
-        "        }\n"
-        "    }\n"
-        "    return d;\n"
-        "}\n"
-        "// Calculate surface normals for lighting\n"
-        "vec3 getNormal(vec3 p) {\n"
-        "    vec2 e = vec2(0.001, 0);\n"
-        "    return normalize(vec3(\n"
-        "        map(p + e.xyy) - map(p - e.xyy),\n"
-        "        map(p + e.yxy) - map(p - e.yxy),\n"
-        "        map(p + e.yyx) - map(p - e.yyx)\n"
-        "    ));\n"
-        "}\n"
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-		"{\n"
-        "    vec2 uv = (fragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;\n"
-        "    vec3 ro = vec3(0, 0, -3.0); // Ray origin\n"
-        "    vec3 rd = normalize(vec3(uv, 1.5)); // Ray direction\n"
-        "    \n"
-        "    // Rotate camera\n"
-        "    ro.xz *= rot(u_time * 0.2);\n"
-        "    rd.xz *= rot(u_time * 0.2);\n"
-        "    ro.yz *= rot(u_time * 0.1);\n"
-        "    rd.yz *= rot(u_time * 0.1);\n"
-        "    float t = 0.0;\n"
-        "    for(int i = 0; i < 80; i++) {\n"
-        "        float d = map(ro + rd * t);\n"
-        "        if(d < 0.001 || t > 20.0) break;\n"
-        "        t += d;\n"
-        "    }\n"
-        "    vec3 col = vec3(0.05, 0.08, 0.12); // Deep background color\n"
-        "    if(t < 20.0) {\n"
-        "        vec3 p = ro + rd * t;\n"
-        "        vec3 n = getNormal(p);\n"
-        "        vec3 lightDir = normalize(vec3(1, 2, -1));\n"
-        "        \n"
-        "        // Material Properties\n"
-        "        float diff = max(dot(n, lightDir), 0.0);\n"
-        "        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);\n"
-        "        float fresnel = pow(1.0 + dot(rd, n), 5.0); // Simulates light catching the edges\n"
-        "        \n"
-        "        // Transparency blending\n"
-        "        float alpha = mix(0.3, 0.9, fresnel);\n"
-        "        vec3 crystalCol = vec3(0.7, 0.85, 1.0); // Light blue tint\n"
-        "        \n"
-        "        col = mix(col, crystalCol * diff + spec + (fresnel * 0.5), alpha);\n"
-        "    }\n"
-        "    fragColor = vec4(col, 1.0);\n"
-        "}\n"; 
-
+	const char* bubble_code = sf_get_shader_snippet(SF_SHADER_SNIPPET_ID_BUBBLE);
 
     data->m_editor_data.m_text = blz_text_create(bubble_code);
-        
-       //blz_text_load_from_file("plasma.txt");
     
     if (!data->m_editor_data.m_text)
     {
         return -1;
     }   
     
-    data->m_editor_data.m_info.m_cursor_line = 0;
-    data->m_editor_data.m_info.m_cursor_offset = 0;
+    data->m_editor_data.m_info.m_cursor.m_line = 0;
+    data->m_editor_data.m_info.m_cursor.m_offset = 0;
     data->m_editor_data.m_info.m_top_line = 0;
     data->m_editor_data.m_info.m_horizontal_padding = 5.0f;
     data->m_editor_data.m_info.m_vertical_padding = 5.0f;
@@ -425,7 +64,7 @@ static void sf_widget_editor_update(blz_widget_t* widget, sf_dialog_data_t* data
 
 static void sf_widget_editor_render(const blz_widget_t* widget, const sf_dialog_data_t* data)
 {
-    const ALLEGRO_FONT* font = data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font;
+    const blz_font_t* font = &data->m_fonts[BLAZE_FONT_ID_EDITOR];
     const blz_text_t* text_data = data->m_editor_data.m_text;
     blz_vec2f_t position = { widget->m_position.m_x - data->m_editor_data.m_text_x_offset, widget->m_position.m_y };
 
@@ -437,27 +76,27 @@ static void sf_widget_editor_render(const blz_widget_t* widget, const sf_dialog_
 static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dialog_data_t* data)
 {
     // Vertical scrolling
-    const blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
+    const blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line);
     if (!current_line)
     {
         return;
     }
-    float line_height = (float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing;
-    float cursor_y = widget->m_position.m_y + data->m_editor_data.m_info.m_vertical_padding + (line_height * (float)data->m_editor_data.m_info.m_cursor_line) - (line_height * (float)data->m_editor_data.m_info.m_top_line);
+    float line_height = (float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font) + data->m_editor_data.m_info.m_line_spacing;
+    float cursor_y = widget->m_position.m_y + data->m_editor_data.m_info.m_vertical_padding + (line_height * (float)data->m_editor_data.m_info.m_cursor.m_line) - (line_height * (float)data->m_editor_data.m_info.m_top_line);
 
 
     if (cursor_y < widget->m_position.m_y + data->m_editor_data.m_info.m_vertical_padding)
     {
-        data->m_editor_data.m_info.m_top_line = data->m_editor_data.m_info.m_cursor_line;
+        data->m_editor_data.m_info.m_top_line = data->m_editor_data.m_info.m_cursor.m_line;
     }
     else if (cursor_y > widget->m_position.m_y + widget->m_size.m_height - data->m_editor_data.m_info.m_vertical_padding - line_height)
     {
-        data->m_editor_data.m_info.m_top_line = data->m_editor_data.m_info.m_cursor_line - (int32_t)(widget->m_size.m_height / line_height) + 1;
+        data->m_editor_data.m_info.m_top_line = data->m_editor_data.m_info.m_cursor.m_line - (int32_t)(widget->m_size.m_height / line_height) + 1;
     }
 
     // Horizontal scrolling
 
-    float cursor_x = widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding + (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font, "W") * (float)data->m_editor_data.m_info.m_cursor_offset - data->m_editor_data.m_text_x_offset;
+    float cursor_x = widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding + (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font, "W") * (float)data->m_editor_data.m_info.m_cursor.m_offset - data->m_editor_data.m_text_x_offset;
 
     if (cursor_x < widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding)
     {
@@ -503,13 +142,13 @@ static bool sf_widget_editor_on_event(blz_widget_t* widget, ALLEGRO_EVENT event,
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
         case ALLEGRO_EVENT_MOUSE_AXES:
         {
-			int32_t current_cursor_line = data->m_editor_data.m_info.m_cursor_line;
-			int32_t current_cursor_offset = data->m_editor_data.m_info.m_cursor_offset;
+			int32_t current_cursor_line = data->m_editor_data.m_info.m_cursor.m_line;
+			int32_t current_cursor_offset = data->m_editor_data.m_info.m_cursor.m_offset;
 
             if (sf_widget_editor_mouse_func(widget, &event, data))
             {
-                if (current_cursor_line != data->m_editor_data.m_info.m_cursor_line ||
-                    current_cursor_offset != data->m_editor_data.m_info.m_cursor_offset)
+                if (current_cursor_line != data->m_editor_data.m_info.m_cursor.m_line ||
+                    current_cursor_offset != data->m_editor_data.m_info.m_cursor.m_offset)
                 {
                     sf_widget_editor_scroll_to_cursor(widget, data);
                 }

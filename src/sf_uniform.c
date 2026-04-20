@@ -2,6 +2,77 @@
 #include "blaze.h"
 #include "sf_uniform.h"
 
+static void _sf_uniform_value_to_string(const sf_uniform_t* uniform, char* buffer, size_t buffer_size)
+{
+	if (!uniform || !buffer || buffer_size == 0)
+	{
+		return;
+	}
+	switch (uniform->m_type)
+	{
+	case SF_UNIFORM_TYPE_BOOL:
+	{
+		snprintf(buffer, buffer_size, "%s", uniform->m_value.m_bool ? "true" : "false");
+	} break;
+	case SF_UNIFORM_TYPE_INT:
+	{
+		snprintf(buffer, buffer_size, "%d", uniform->m_value.m_int);
+	} break;
+	case SF_UNIFORM_TYPE_FLOAT:
+	{
+		snprintf(buffer, buffer_size, "%0.2f", uniform->m_value.m_float);
+	} break;
+	case SF_UNIFORM_TYPE_INT_VEC2:
+	{
+		snprintf(buffer, buffer_size, "<%d, %d>", uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1]);
+	} break;
+	case SF_UNIFORM_TYPE_INT_VEC3:
+	{
+		snprintf(buffer, buffer_size, "<%d, %d, %d>", uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1], uniform->m_value.m_int_vec[2]);
+	} break;
+	case SF_UNIFORM_TYPE_INT_VEC4:
+	{
+		snprintf(buffer, buffer_size, "<%d, %d, %d, %d>", uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1], uniform->m_value.m_int_vec[2], uniform->m_value.m_int_vec[3]);
+	} break;
+	case SF_UNIFORM_TYPE_FLOAT_VEC2:
+	{
+		snprintf(buffer, buffer_size, "<%0.2f, %0.2f>", uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1]);
+	} break;
+	case SF_UNIFORM_TYPE_FLOAT_VEC3:
+	{
+		snprintf(buffer, buffer_size, "<%0.2f, %0.2f, %0.2f>", uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1], uniform->m_value.m_float_vec[2]);
+	} break;
+	case SF_UNIFORM_TYPE_FLOAT_VEC4:
+	{
+		snprintf(buffer, buffer_size, "<%0.2f, %0.2f, %0.2f, %0.2f>", uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1], uniform->m_value.m_float_vec[2], uniform->m_value.m_float_vec[3]);
+	} break;
+	case SF_UNIFORM_TYPE_MATRIX:
+	{
+		snprintf(buffer, buffer_size, "[matrix]");
+	} break;
+	case SF_UNIFORM_TYPE_SAMPLER2D:
+	{
+		snprintf(buffer, buffer_size, "[sampler2D, unit: %d]", uniform->m_value.m_sampler2d.m_unit);
+	} break;
+	default:
+	{
+		snprintf(buffer, buffer_size, "[unknown type]");
+	} break;
+	}
+}
+
+void sf_uniform_to_string(const sf_uniform_t* uniform, char* buffer, size_t buffer_size)
+{
+	if (!uniform || !buffer || buffer_size == 0 || uniform->m_type < 0 || uniform->m_type >= SF_UNIFORM_TYPE_COUNT)
+	{
+		return;
+	}
+
+	char value_buffer[128] = { 0 };
+	_sf_uniform_value_to_string(uniform, value_buffer, sizeof(value_buffer));
+	snprintf(buffer, buffer_size, "%s: %s %s", uniform->m_name, SF_UNIFORM_NAME_STRS[uniform->m_type], value_buffer);
+}
+
 void sf_uniform_clear(sf_uniform_t* uniform)
 {
 	if (!uniform)
@@ -62,6 +133,16 @@ bool sf_uniform_pop(sf_uniform_t* uniform)
 	return blz_darray_pop(uniform);
 }
 
+static void _sf_uniform_destroy_callback(const void* element, size_t index, void* user_data)
+{
+	sf_uniform_t* uniform = (sf_uniform_t*)element;
+	if (uniform->m_name)
+	{
+		al_free(uniform->m_name);
+		uniform->m_name = NULL;
+	}
+}
+
 void sf_uniform_destroy(sf_uniform_t* uniform)
 {
 	if (!uniform)
@@ -69,19 +150,7 @@ void sf_uniform_destroy(sf_uniform_t* uniform)
 		return;
 	}
 
-	size_t uniform_count = blz_darray_size(uniform);
-
-	for (size_t i = 0; i < uniform_count; ++i)
-	{
-		sf_uniform_t* current_uniform = (sf_uniform_t*)blz_darray_at(uniform, i);
-
-		if (current_uniform->m_name)
-		{
-			al_free(current_uniform->m_name);
-			current_uniform->m_name = NULL;
-		}
-	}
-
+	blz_darray_for_each(uniform, _sf_uniform_destroy_callback, NULL);
 	blz_darray_destroy(uniform);
 }
 
@@ -298,58 +367,13 @@ void sf_uniform_set_matrix(sf_uniform_t* uniform, ALLEGRO_TRANSFORM transform)
 	uniform->m_type = SF_UNIFORM_TYPE_MATRIX;
 }
 
-void sf_uniform_to_string(const sf_uniform_t* uniform, char* buffer, size_t buffer_size)
+void sf_uniform_set_sampler2d(sf_uniform_t* uniform, ALLEGRO_BITMAP* texture, int32_t unit)
 {
-	if (!uniform || !buffer || buffer_size == 0)
+	if (!uniform || !texture)
 	{
 		return;
 	}
-	switch (uniform->m_type)
-	{
-	case SF_UNIFORM_TYPE_BOOL:
-	{
-		snprintf(buffer, buffer_size, "%s: %s", uniform->m_name, uniform->m_value.m_bool ? "true" : "false");
-	} break;
-	case SF_UNIFORM_TYPE_INT:
-	{
-		snprintf(buffer, buffer_size, "%s: %d", uniform->m_name, uniform->m_value.m_int);
-	} break;
-	case SF_UNIFORM_TYPE_FLOAT:
-	{
-		snprintf(buffer, buffer_size, "%s: %0.2f", uniform->m_name, uniform->m_value.m_float);
-	} break;
-	case SF_UNIFORM_TYPE_INT_VEC2:
-	{
-		snprintf(buffer, buffer_size, "%s: <%d, %d>", uniform->m_name, uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1]);
-	} break;
-	case SF_UNIFORM_TYPE_INT_VEC3:
-	{
-		snprintf(buffer, buffer_size, "%s: <%d, %d, %d>", uniform->m_name, uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1], uniform->m_value.m_int_vec[2]);
-	} break;
-	case SF_UNIFORM_TYPE_INT_VEC4:
-	{
-		snprintf(buffer, buffer_size, "%s: <%d, %d, %d, %d>", uniform->m_name, uniform->m_value.m_int_vec[0], uniform->m_value.m_int_vec[1], uniform->m_value.m_int_vec[2], uniform->m_value.m_int_vec[3]);
-	} break;
-	case SF_UNIFORM_TYPE_FLOAT_VEC2:
-	{
-		snprintf(buffer, buffer_size, "%s: <%0.2f, %0.2f>", uniform->m_name, uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1]);
-	} break;
-	case SF_UNIFORM_TYPE_FLOAT_VEC3:
-	{
-		snprintf(buffer, buffer_size, "%s: <%0.2f, %0.2f, %0.2f>", uniform->m_name, uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1], uniform->m_value.m_float_vec[2]);
-	} break;
-	case SF_UNIFORM_TYPE_FLOAT_VEC4:
-	{
-		snprintf(buffer, buffer_size, "%s: <%0.2f, %0.2f, %0.2f, %0.2f>", uniform->m_name, uniform->m_value.m_float_vec[0], uniform->m_value.m_float_vec[1], uniform->m_value.m_float_vec[2], uniform->m_value.m_float_vec[3]);
-	} break;
-	case SF_UNIFORM_TYPE_MATRIX:
-	{
-		snprintf(buffer, buffer_size, "%s: [matrix]", uniform->m_name);
-	} break;
-	default:
-	{
-		snprintf(buffer, buffer_size, "%s: [unknown type]", uniform->m_name);
-	} break;
-	}
+	uniform->m_value.m_sampler2d.m_texture = texture;
+	uniform->m_value.m_sampler2d.m_unit = unit;
+	uniform->m_type = SF_UNIFORM_TYPE_SAMPLER2D;
 }
-

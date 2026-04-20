@@ -18,19 +18,6 @@ static const char* SF_SHADER_PIXEL_STRING_PREFIX =
 "\n"
 "out vec4 gl_FragColor;\n";
 
-static const char* sf_uniform_name_strs[SF_UNIFORM_TYPE_COUNT] = 
-{
-	"bool",
-	"int",
-	"float",
-	"ivec2",
-	"ivec3",
-	"ivec4",
-	"vec2",
-	"vec3",
-	"vec4",
-	"mat4"
-};
 
 const char* glsl_suffix_code =
 "\nvoid main()\n"
@@ -48,7 +35,7 @@ static int32_t sf_shader_generate_uniform_text(ALLEGRO_USTR* text, const sf_unif
 	}
 
 	if (!al_ustr_append_cstr(text, "uniform ") ||
-		!al_ustr_append_cstr(text, sf_uniform_name_strs[uniform->m_type]) ||
+		!al_ustr_append_cstr(text, SF_UNIFORM_NAME_STRS[uniform->m_type]) ||
 		!al_ustr_append_cstr(text, " ") ||
 		!al_ustr_append_cstr(text, uniform->m_name) || 
 		!al_ustr_append_cstr(text, ";\n"))
@@ -181,7 +168,7 @@ static int32_t _sf_shader_generate(ALLEGRO_SHADER** shader, ALLEGRO_USTR** text,
 		return -1;
 	}
 
-	blz_stringview_t text_view = { text_str, strlen(text_str) };
+	blz_stringview_t text_view = { strlen(text_str), text_str };
 
 	if (sf_shader_generate_text(*text, text_view, uniform) != 0)
 	{

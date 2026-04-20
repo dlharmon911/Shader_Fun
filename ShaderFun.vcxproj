@@ -156,6 +156,7 @@
     <ClInclude Include="include\blaze\blz_color_list.h" />
     <ClInclude Include="include\blaze\blz_color_u8_to_float.h" />
     <ClInclude Include="include\blaze\blz_common.h" />
+    <ClInclude Include="include\blaze\blz_config.h" />
     <ClInclude Include="include\blaze\blz_darray.h" />
     <ClInclude Include="include\blaze\blz_dialog.h" />
     <ClInclude Include="include\blaze\blz_file.h" />
@@ -167,12 +168,14 @@
     <ClInclude Include="include\blaze\blz_log.h" />
     <ClInclude Include="include\blaze\blz_math.h" />
     <ClInclude Include="include\blaze\blz_shapes.h" />
+    <ClInclude Include="include\blaze\blz_string.h" />
     <ClInclude Include="include\blaze\blz_stringview.h" />
     <ClInclude Include="include\blaze\blz_text.h" />
     <ClInclude Include="include\blaze\blz_widget.h" />
     <ClInclude Include="include\sf_dialog_data.h" />
     <ClInclude Include="include\sf_dialog_main.h" />
     <ClInclude Include="include\sf_shader.h" />
+    <ClInclude Include="include\sf_shader_snippets.h" />
     <ClInclude Include="include\sf_text_highlighter.h" />
     <ClInclude Include="include\sf_uniform.h" />
     <ClInclude Include="include\sf_widget_console.h" />
@@ -183,6 +186,7 @@
   <ItemGroup>
     <ClCompile Include="src\blaze\blz_byte.c" />
     <ClCompile Include="src\blaze\blz_color.c" />
+    <ClCompile Include="src\blaze\blz_config.c" />
     <ClCompile Include="src\blaze\blz_darray.c" />
     <ClCompile Include="src\blaze\blz_dialog.c" />
     <ClCompile Include="src\blaze\blz_file.c" />
@@ -191,12 +195,14 @@
     <ClCompile Include="src\blaze\blz_input.c" />
     <ClCompile Include="src\blaze\blz_log.c" />
     <ClCompile Include="src\blaze\blz_math.c" />
+    <ClCompile Include="src\blaze\blz_string.c" />
     <ClCompile Include="src\blaze\blz_stringview.c" />
     <ClCompile Include="src\blaze\blz_text.c" />
     <ClCompile Include="src\blaze\blz_widget.c" />
     <ClCompile Include="src\sf_dialog_main.c" />
     <ClCompile Include="src\sf_main.c" />
     <ClCompile Include="src\sf_shader.c" />
+    <ClCompile Include="src\sf_shader_snippets.c" />
     <ClCompile Include="src\sf_text_highlighter.c" />
     <ClCompile Include="src\sf_uniform.c" />
     <ClCompile Include="src\sf_widget_console.c" />

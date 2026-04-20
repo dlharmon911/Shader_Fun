@@ -18,32 +18,32 @@ enum
 
 const blz_stringview_t glsl_keywords[BLAZE_TEXT_KEYWORD_COUNT] =
 {
-	{ "attribute", 9 }, { "bool", 4 }, { "break", 5 }, { "buffer", 6 }, { "bvec2", 5 },
-	{ "bvec3", 5 }, { "bvec4", 5 }, { "case", 4 }, { "centroid", 8 }, { "coherent", 8 },
-	{ "const", 5 }, { "continue", 8 }, { "default", 7 }, { "discard", 7 }, { "do", 2 },
-	{ "double", 6 }, { "dvec2", 5 }, { "dvec3", 5 }, { "dvec4", 5 }, { "else", 4 },
-	{ "false", 5 }, { "flat", 4 }, { "float", 5 }, { "for", 3 }, { "highp", 5 },
-	{ "if", 2 }, { "image1D", 7 }, { "image2D", 7 }, { "image3D", 7 }, { "in", 2 },
-	{ "inout", 5 }, { "int", 3 }, { "invariant", 9 }, { "isampler2D", 10 }, { "isampler3D", 10 },
-	{ "ivec2", 5 }, { "ivec3", 5 }, { "ivec4", 5 }, { "layout", 6 }, { "lowp", 5 },
-	{ "mat2", 4 }, { "mat3", 4 }, { "mat4", 4 }, { "mediump", 8 }, { "noperspective", 13 },
-	{ "out", 3 }, { "patch", 5 }, { "precise", 7 }, { "precision", 9 }, { "readonly", 8 },
-	{ "restrict", 8 }, { "return", 6 }, { "sampler2D", 9 }, { "sampler3D", 9 }, { "samplerCube", 11 },
-	{ "shared", 6 }, { "smooth", 6 }, { "struct", 6 }, { "subroutine", 10 }, { "switch", 6 },
-	{ "true", 4 }, { "uimage2D", 8 }, { "uimage3D", 8 }, { "uint", 4 }, { "uniform", 7 },
-	{ "usampler2D", 10 }, { "usampler3D", 10 }, { "uvec2", 5 }, { "uvec3", 5 }, { "uvec4", 5 },
-	{ "varying", 7 }, { "vec2", 4 }, { "vec3", 4 }, { "vec4", 4 }, { "void", 4 },
-	{ "volatile", 8 }, { "while", 5 }, { "writeonly", 10 }
+	{ 9, "attribute" }, { 4, "bool" }, { 5, "break" }, { 6, "buffer" }, { 5, "bvec2" },
+	{ 5, "bvec3" }, { 5, "bvec4" }, { 4, "case" }, { 8, "centroid" }, { 8, "coherent" },
+	{ 5, "const" }, { 8, "continue" }, { 7, "default" }, { 7, "discard" }, { 2, "do" },
+	{ 6, "double" }, { 5, "dvec2" }, { 5, "dvec3" }, { 5, "dvec4" }, { 4, "else" },
+	{ 5, "false" }, { 4, "flat" }, { 5, "float" }, { 3, "for" }, { 5, "highp" },
+	{ 2, "if" }, { 7, "image1D" }, { 7, "image2D" }, { 7, "image3D" }, { 2, "in" },
+	{ 5, "inout" }, { 3, "int" }, { 9, "invariant" }, { 10, "isampler2D" }, { 10, "isampler3D" },
+	{ 5, "ivec2" }, { 5, "ivec3" }, { 5, "ivec4" }, { 6, "layout" }, { 5, "lowp" },
+	{ 4, "mat2" }, { 4, "mat3" }, { 4, "mat4" }, { 8, "mediump" }, { 13, "noperspective" },
+	{ 3, "out" }, { 5, "patch" }, { 7, "precise" }, { 9, "precision" }, { 8, "readonly" },
+	{ 8, "restrict" }, { 6, "return" }, { 9, "sampler2D" }, { 9, "sampler3D" }, { 11, "samplerCube" },
+	{ 6, "shared" }, { 6, "smooth" }, { 6, "struct" }, { 10, "subroutine" }, { 6, "switch" },
+	{ 4, "true" }, { 8, "uimage2D" }, { 8, "uimage3D" }, { 4, "uint" }, { 7, "uniform" },
+	{ 10, "usampler2D" }, { 10, "usampler3D" }, { 5, "uvec2" }, { 5, "uvec3" }, { 5, "uvec4" },
+	{ 7, "varying" }, { 4, "vec2" }, { 4, "vec3" }, { 4, "vec4" }, { 4, "void" },
+	{ 8, "volatile" }, { 5, "while" }, { 10, "writeonly" }
 };
 
 const blz_stringview_t glsl_function_name[BLAZE_TEXT_FUNCTION_NAME_COUNT] =
 {
-	{ "abs", 3 }, { "acos", 4 }, { "asin", 4 }, { "atan", 4 }, { "ceil", 4 },
-	{ "clamp", 5 }, { "cos", 3 }, { "degrees", 7 }, { "exp", 3 }, { "exp2", 4 },
-	{ "floor", 5 }, { "fract", 5 }, { "inversesqrt", 11 }, { "log", 3 }, { "log2", 4 },
-	{ "main", 4 },{ "max", 3 }, { "min", 3 }, { "mix", 3 }, { "mod", 3 }, { "pow", 3 },
-	{ "radians", 7 }, { "sign", 4 }, { "sin", 3 }, { "smoothstep", 10 }, { "sqrt", 4 },
-	{ "step", 4 }, { "tan", 3 }
+	{ 3, "abs" }, { 4, "acos" }, { 4, "asin" }, { 4, "atan" }, { 4, "ceil" },
+	{ 5, "clamp" }, { 3, "cos" }, { 7, "degrees" }, { 3, "exp" }, { 4, "exp2" },
+	{ 5, "floor" }, { 5, "fract" }, { 11, "inversesqrt" }, { 3, "log" }, { 4, "log2" },
+	{ 4, "main" },{ 3, "max" }, { 3, "min" }, { 3, "mix" }, { 3, "mod" }, { 3, "pow" },
+	{ 7, "radians" }, { 4, "sign" }, { 3, "sin" }, { 10, "smoothstep" }, { 4, "sqrt" },
+	{ 4, "step" }, { 3, "tan" }
 };
 
 typedef struct blz_text_token_t
@@ -52,8 +52,14 @@ typedef struct blz_text_token_t
 	int32_t m_type;
 } blz_text_token_t;
 
+
 static bool _blz_text_is_name(blz_stringview_t text, const blz_stringview_t* names, size_t count)
 {
+	if (!text.m_length || !names || !count)
+	{
+		return false;
+	}
+
 	for (size_t i = 0; i < count && text.m_data[0] >= names[i].m_data[0]; ++i)
 	{
 		if (blz_stringview_equals(names[i], text))
@@ -202,7 +208,7 @@ static blz_stringview_t _blz_text_get_token(blz_stringview_t line, blz_text_toke
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 1;
 
-	return (blz_stringview_t) { line.m_data + 1, line.m_length - 1 };
+	return (blz_stringview_t) { line.m_length - 1, line.m_data + 1 };
 }
 
 static void _blz_text_parse_multiline_comment(const ALLEGRO_FONT* font, blz_stringview_t* line, blz_vec2f_t* position, const blz_text_info_t* info, bool* multiline_comment)
@@ -234,21 +240,7 @@ typedef struct sf_text_highlighter_data_tag_t
 	bool m_multiline_comment;
 } sf_text_highlighter_data_t;
 
-void sf_text_highlighter_begin(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* data)
-{
-	static sf_text_highlighter_data_t _sf_text_highlighter_data = { false };
-
-	if (!font || !text || !info || !data)
-	{
-		return;
-	}
-
-	sf_text_highlighter_data_t* hdata = (sf_text_highlighter_data_t*)data;
-
-	hdata->m_multiline_comment = false;
-}
-
-void sf_text_highlighter_finish(const ALLEGRO_FONT* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* data)
+static void sf_text_highlighter_begin(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* data)
 {
 	if (!font || !text || !info || !data)
 	{
@@ -260,14 +252,27 @@ void sf_text_highlighter_finish(const ALLEGRO_FONT* font, const blz_text_t* text
 	hdata->m_multiline_comment = false;
 }
 
-void sf_text_highlighter_per_line(const ALLEGRO_FONT* font, blz_stringview_t line, blz_vec2f_t position, const blz_text_info_t* info, void* data)
+static void sf_text_highlighter_finish(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* data)
+{
+	if (!font || !text || !info || !data)
+	{
+		return;
+	}
+
+	sf_text_highlighter_data_t* hdata = (sf_text_highlighter_data_t*)data;
+
+	hdata->m_multiline_comment = false;
+}
+
+static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_t line, blz_vec2f_t position, const blz_text_info_t* info, void* data)
 {
 	blz_text_token_t token = { 0 };
 	sf_text_highlighter_data_t* hdata = (sf_text_highlighter_data_t*)data;
+	int32_t offset = 0;
 
 	if (hdata->m_multiline_comment)
 	{
-		_blz_text_parse_multiline_comment(font, &line, &position, info, &hdata->m_multiline_comment);
+		_blz_text_parse_multiline_comment(font->m_font, &line, &position, info, &hdata->m_multiline_comment);
 	}
 
 	while (line.m_length)
@@ -309,8 +314,7 @@ void sf_text_highlighter_per_line(const ALLEGRO_FONT* font, blz_stringview_t lin
 
 		if (token.m_value.m_length)
 		{
-			al_draw_textf(font, color, position.m_x, position.m_y, 0, "%.*s", (int)token.m_value.m_length, token.m_value.m_data);
-			position.m_x += (float)token.m_value.m_length * (float)al_get_text_width(font, "W");
+			blz_text_draw_tab_delimited(font, token.m_value, &position, &offset, color);
 		}
 	}
 }

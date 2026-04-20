@@ -15,9 +15,9 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
     {
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION;
     }
-    else if (data->m_editor_data.m_info.m_cursor_offset == 0)
+    else if (data->m_editor_data.m_info.m_cursor.m_offset == 0)
     {        
-        if (data->m_editor_data.m_info.m_cursor_line == 0)
+        if (data->m_editor_data.m_info.m_cursor.m_line == 0)
         {
             return true;
         }
@@ -26,7 +26,7 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
     }
     else
     {
-        --data->m_editor_data.m_info.m_cursor_offset;
+        --data->m_editor_data.m_info.m_cursor.m_offset;
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
@@ -53,17 +53,17 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
     {
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION;
     }
-    else if (data->m_editor_data.m_info.m_cursor_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text))
+    else if (data->m_editor_data.m_info.m_cursor.m_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text))
     {
-        const blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line);
+        const blz_text_node_t* current_line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line);
 
         if (!current_line->m_next)
         {
             return true;
 		}
 
-        ++data->m_editor_data.m_info.m_cursor_line;
-        data->m_editor_data.m_info.m_cursor_offset = 0;
+        ++data->m_editor_data.m_info.m_cursor.m_line;
+        data->m_editor_data.m_info.m_cursor.m_offset = 0;
 
 		edit_type = BLAZE_TEXT_EDIT_OPTION_MERGE_LINE;
     }
@@ -84,19 +84,19 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 
 static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    if (data->m_editor_data.m_info.m_cursor_line == 0)
+    if (data->m_editor_data.m_info.m_cursor.m_line == 0)
     {
         return true;
     }
-    --data->m_editor_data.m_info.m_cursor_line;
+    --data->m_editor_data.m_info.m_cursor.m_line;
 
-    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
 
     int32_t line_length = (int32_t)al_ustr_size(line);
 
-    if (data->m_editor_data.m_info.m_cursor_offset >= line_length)
+    if (data->m_editor_data.m_info.m_cursor.m_offset >= line_length)
     {
-        data->m_editor_data.m_info.m_cursor_offset = line_length;
+        data->m_editor_data.m_info.m_cursor.m_offset = line_length;
     }
     return true;
 }
@@ -105,20 +105,20 @@ static bool sf_widget_editor_process_key_down(blz_widget_t* widget, ALLEGRO_EVEN
 {
 	int32_t line_count = (int32_t)blz_text_get_line_count(data->m_editor_data.m_text);
 
-    if (data->m_editor_data.m_info.m_cursor_line >= line_count - 1)
+    if (data->m_editor_data.m_info.m_cursor.m_line >= line_count - 1)
     {
         return true;
     }
 
-    ++data->m_editor_data.m_info.m_cursor_line;
+    ++data->m_editor_data.m_info.m_cursor.m_line;
 
-	const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+	const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
 
     int32_t line_length = (int32_t)al_ustr_size(line);
 
-    if (data->m_editor_data.m_info.m_cursor_offset >= line_length)
+    if (data->m_editor_data.m_info.m_cursor.m_offset >= line_length)
     {
-        data->m_editor_data.m_info.m_cursor_offset = line_length;
+        data->m_editor_data.m_info.m_cursor.m_offset = line_length;
     }
 
     return true;
@@ -126,23 +126,23 @@ static bool sf_widget_editor_process_key_down(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_left(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    if (data->m_editor_data.m_info.m_cursor_offset == 0)
+    if (data->m_editor_data.m_info.m_cursor.m_offset == 0)
     {
-        if (data->m_editor_data.m_info.m_cursor_line == 0)
+        if (data->m_editor_data.m_info.m_cursor.m_line == 0)
         {
 			return true;
         }
-        --data->m_editor_data.m_info.m_cursor_line;
+        --data->m_editor_data.m_info.m_cursor.m_line;
 
-        const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text;
+        const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
 
         int32_t line_length = (int32_t)al_ustr_size(line);
 
-        data->m_editor_data.m_info.m_cursor_offset = line_length;
+        data->m_editor_data.m_info.m_cursor.m_offset = line_length;
     }
     else
     {
-        --data->m_editor_data.m_info.m_cursor_offset;
+        --data->m_editor_data.m_info.m_cursor.m_offset;
     }
 
     return true;
@@ -150,19 +150,19 @@ static bool sf_widget_editor_process_key_left(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_right(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    if (data->m_editor_data.m_info.m_cursor_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text))
+    if (data->m_editor_data.m_info.m_cursor.m_offset == (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text))
     {
-        const blz_text_node_t* next_line = blz_text_get_line(data->m_editor_data.m_text, (size_t)(data->m_editor_data.m_info.m_cursor_line + 1));
+        const blz_text_node_t* next_line = blz_text_get_line(data->m_editor_data.m_text, (size_t)(data->m_editor_data.m_info.m_cursor.m_line + 1));
         if (!next_line)
         {
             return true;
         }
-        ++data->m_editor_data.m_info.m_cursor_line;
-        data->m_editor_data.m_info.m_cursor_offset = 0;
+        ++data->m_editor_data.m_info.m_cursor.m_line;
+        data->m_editor_data.m_info.m_cursor.m_offset = 0;
     }
     else
     {
-        ++data->m_editor_data.m_info.m_cursor_offset;
+        ++data->m_editor_data.m_info.m_cursor.m_offset;
     }
     return true;
 }
@@ -187,42 +187,40 @@ static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVE
 
 static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    const char tab_str[] = "    ";
-	blz_stringview_t tab_view = { tab_str, sizeof(tab_str) - 1 };
+    int32_t c = '\t';
+    int32_t result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, &c);
 
-	int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_TEXT, &tab_view);
+    if (result == 0)
+    {
+        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+    }
 
-	(void)edit_result; // Silence unused variable warning
-
-    data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
-    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
-    
     return true;
 }
 
 static bool sf_widget_editor_process_key_home(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    data->m_editor_data.m_info.m_cursor_offset = 0;
+    data->m_editor_data.m_info.m_cursor.m_offset = 0;
     
     return true;
 }
 
 static bool sf_widget_editor_process_key_end(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    data->m_editor_data.m_info.m_cursor_offset = (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor_line)->m_text);
+    data->m_editor_data.m_info.m_cursor.m_offset = (int32_t)al_ustr_size(blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text);
 
     return true;
 }
 
 static bool sf_widget_editor_process_key_pgup(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
+    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font) + data->m_editor_data.m_info.m_line_spacing));
     
-    data->m_editor_data.m_info.m_cursor_line -= visible_line_count;
+    data->m_editor_data.m_info.m_cursor.m_line -= visible_line_count;
     
-    if (data->m_editor_data.m_info.m_cursor_line < 0)
+    if (data->m_editor_data.m_info.m_cursor.m_line < 0)
     {
-        data->m_editor_data.m_info.m_cursor_line = 0;
+        data->m_editor_data.m_info.m_cursor.m_line = 0;
     }
 
     return true;
@@ -230,13 +228,13 @@ static bool sf_widget_editor_process_key_pgup(blz_widget_t* widget, ALLEGRO_EVEN
 
 static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing));
-    data->m_editor_data.m_info.m_cursor_line += visible_line_count;
+    int32_t visible_line_count = (int32_t)(widget->m_size.m_height / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font) + data->m_editor_data.m_info.m_line_spacing));
+    data->m_editor_data.m_info.m_cursor.m_line += visible_line_count;
     int32_t line_count = (int32_t)blz_text_get_line_count(data->m_editor_data.m_text);
 
-    if (data->m_editor_data.m_info.m_cursor_line >= line_count)
+    if (data->m_editor_data.m_info.m_cursor.m_line >= line_count)
     {
-        data->m_editor_data.m_info.m_cursor_line = line_count - 1;
+        data->m_editor_data.m_info.m_cursor.m_line = line_count - 1;
     }
 
     return true;

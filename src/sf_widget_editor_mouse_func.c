@@ -2,7 +2,7 @@
 #include "sf_widget_editor.h"
 #include "sf_dialog_data.h"
 
-static void sf_set_line_selection_point(const blz_widget_t* widget, const sf_dialog_data_t* data, ALLEGRO_EVENT event, blz_text_selection_point_t* point)
+static void sf_set_line_selection_point(const blz_widget_t* widget, const sf_dialog_data_t* data, ALLEGRO_EVENT event, blz_cursor_t* point)
 {
     // set cursor position based on mouse click
 
@@ -17,12 +17,13 @@ static void sf_set_line_selection_point(const blz_widget_t* widget, const sf_dia
 		return;
 	}
 
-	int32_t mouse_line_pos = (int32_t)(((float)event.mouse.y - widget->m_position.m_y - data->m_editor_data.m_info.m_vertical_padding) / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font) + data->m_editor_data.m_info.m_line_spacing)) + data->m_editor_data.m_info.m_top_line;
-	int32_t mouse_offset_pos = (int32_t)(((float) event.mouse.x - widget->m_position.m_x - data->m_editor_data.m_info.m_horizontal_padding + data->m_editor_data.m_text_x_offset) / (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR_REGULAR].m_font, "W"));
+	int32_t mouse_line_pos = (int32_t)(((float)event.mouse.y - widget->m_position.m_y - data->m_editor_data.m_info.m_vertical_padding) / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font) + data->m_editor_data.m_info.m_line_spacing)) + data->m_editor_data.m_info.m_top_line;
 
     mouse_line_pos = max(0, min(mouse_line_pos, line_count - 1));
 
     const blz_text_node_t* line = blz_text_get_line(data->m_editor_data.m_text, mouse_line_pos);
+
+    int32_t mouse_offset_pos = (int32_t)(((float)event.mouse.x - widget->m_position.m_x - data->m_editor_data.m_info.m_horizontal_padding + data->m_editor_data.m_text_x_offset) / (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font, "W"));
 
     mouse_offset_pos = max(0, min(mouse_offset_pos, (int32_t)al_ustr_size(line->m_text)));
 
@@ -55,8 +56,8 @@ static bool sf_widget_editor_mouse_down(blz_widget_t* widget, ALLEGRO_EVENT even
     sf_set_line_selection_point(widget, data, event, &data->m_editor_data.m_info.m_selection.m_start);
     data->m_editor_data.m_info.m_selection.m_end.m_line = data->m_editor_data.m_info.m_selection.m_start.m_line;
     data->m_editor_data.m_info.m_selection.m_end.m_offset = data->m_editor_data.m_info.m_selection.m_start.m_offset;
-    data->m_editor_data.m_info.m_cursor_line = data->m_editor_data.m_info.m_selection.m_end.m_line;
-    data->m_editor_data.m_info.m_cursor_offset = data->m_editor_data.m_info.m_selection.m_end.m_offset;
+    data->m_editor_data.m_info.m_cursor.m_line = data->m_editor_data.m_info.m_selection.m_end.m_line;
+    data->m_editor_data.m_info.m_cursor.m_offset = data->m_editor_data.m_info.m_selection.m_end.m_offset;
     data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_START_GRABBED;
 
 	return true;
@@ -68,8 +69,8 @@ static bool sf_widget_editor_mouse_axes(blz_widget_t* widget, ALLEGRO_EVENT even
     {
         sf_set_line_selection_point(widget, data, event, &data->m_editor_data.m_info.m_selection.m_end);
 
-        data->m_editor_data.m_info.m_cursor_line = data->m_editor_data.m_info.m_selection.m_end.m_line;
-        data->m_editor_data.m_info.m_cursor_offset = data->m_editor_data.m_info.m_selection.m_end.m_offset;
+        data->m_editor_data.m_info.m_cursor.m_line = data->m_editor_data.m_info.m_selection.m_end.m_line;
+        data->m_editor_data.m_info.m_cursor.m_offset = data->m_editor_data.m_info.m_selection.m_end.m_offset;
     }
 
     if (event.mouse.dz)
@@ -88,6 +89,22 @@ static bool sf_widget_editor_mouse_axes(blz_widget_t* widget, ALLEGRO_EVENT even
     return true;
 }
 
+static bool sf_widget_editor_mouse_control_axes(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+	int32_t dz = event.mouse.dz;
+
+    if (dz < 0)
+    {
+		blz_font_decrement_size(&data->m_fonts, BLAZE_FONT_ID_EDITOR);
+    }
+    else if (dz > 0)
+    {
+        blz_font_increment_size(&data->m_fonts, BLAZE_FONT_ID_EDITOR);
+    }
+
+	return true;
+}
+
 typedef bool (*sf_widget_editor_process_mouse_func_t)(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data);
 
 static const sf_widget_editor_process_mouse_func_t sf_widget_editor_process_mouse_funcs[] =
@@ -96,6 +113,10 @@ static const sf_widget_editor_process_mouse_func_t sf_widget_editor_process_mous
 	[ALLEGRO_EVENT_MOUSE_BUTTON_DOWN] = sf_widget_editor_mouse_down,
 	[ALLEGRO_EVENT_MOUSE_AXES] = sf_widget_editor_mouse_axes
 };
+static const sf_widget_editor_process_mouse_func_t sf_widget_editor_process_mouse_control_funcs[] =
+{
+    [ALLEGRO_EVENT_MOUSE_AXES] = sf_widget_editor_mouse_control_axes
+};
 
 bool sf_widget_editor_mouse_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)
 {
@@ -103,6 +124,20 @@ bool sf_widget_editor_mouse_func(blz_widget_t* widget, const ALLEGRO_EVENT* even
     {
         return false;
 	}
+    ALLEGRO_KEYBOARD_STATE keyboard_state = { 0 };
+	al_get_keyboard_state(&keyboard_state);
+
+    if (al_key_down(&keyboard_state, ALLEGRO_KEY_LCTRL) || al_key_down(&keyboard_state, ALLEGRO_KEY_RCTRL))
+    {
+        const sf_widget_editor_process_mouse_func_t func = sf_widget_editor_process_mouse_control_funcs[event->type];
+
+        if (func && func(widget, *event, (sf_dialog_data_t*)data))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 	const sf_widget_editor_process_mouse_func_t func = sf_widget_editor_process_mouse_funcs[event->type];
 

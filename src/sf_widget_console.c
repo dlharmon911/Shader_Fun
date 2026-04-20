@@ -17,8 +17,8 @@ static int32_t sf_widget_console_initialize(blz_widget_t* widget, sf_dialog_data
 	}
 
 
-	data->m_console_data.m_info.m_cursor_line = 0;
-	data->m_console_data.m_info.m_cursor_offset = 0;
+	data->m_console_data.m_info.m_cursor.m_line = 0;
+	data->m_console_data.m_info.m_cursor.m_offset = 0;
 	data->m_console_data.m_info.m_top_line = 0;
 	data->m_console_data.m_info.m_horizontal_padding = 5.0f;
 	data->m_console_data.m_info.m_vertical_padding = 5.0f;

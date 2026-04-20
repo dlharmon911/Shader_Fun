@@ -43,7 +43,7 @@ blz_stringview_t blz_stringview_ltrim(blz_stringview_t str, size_t trim_length)
 		trim_length = str.m_length;
 	}
 
-	return (blz_stringview_t) { str.m_data + trim_length, str.m_length - trim_length };
+	return (blz_stringview_t) { str.m_length - trim_length, str.m_data + trim_length };
 }
 
 blz_stringview_t blz_stringview_rtrim(blz_stringview_t str, size_t trim_length)
@@ -53,7 +53,7 @@ blz_stringview_t blz_stringview_rtrim(blz_stringview_t str, size_t trim_length)
 		trim_length = str.m_length;
 	}
 
-	return (blz_stringview_t) { str.m_data, str.m_length - trim_length };
+	return (blz_stringview_t) { str.m_length - trim_length, str.m_data };
 }
 
 bool blz_stringview_equals(blz_stringview_t str1, blz_stringview_t str2)

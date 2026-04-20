@@ -117,6 +117,15 @@
     <ClInclude Include="include\blaze\blz_font_regular.h">
       <Filter>Header Files\Blaze Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\sf_shader_snippets.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_config.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\blaze\blz_string.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sf_dialog_main.c">
@@ -189,6 +198,15 @@
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
     <ClCompile Include="src\blaze\blz_file.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sf_shader_snippets.c">
+      <Filter>Source Files\ShaderFun Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blaze\blz_config.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blaze\blz_string.c">
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
   </ItemGroup>

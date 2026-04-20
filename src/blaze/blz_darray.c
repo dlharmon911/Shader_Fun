@@ -171,3 +171,19 @@ bool blz_darray_pop(void* array)
 	header->m_size--;
 	return true;
 }
+
+void blz_darray_for_each(const void* array, void (*callback)(const void* element, size_t index, void* user_data), void* user_data)
+{
+	if (array == NULL || callback == NULL)
+	{
+		return;
+	}
+
+	const blz_darray_header_t* header = (const blz_darray_header_t*)array - 1;
+	
+	for (size_t i = 0; i < header->m_size; ++i)
+	{
+		const void* element = (const char*)(header + 1) + i * header->m_element_size;
+		callback(element, i, user_data);
+	}
+}
