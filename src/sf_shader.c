@@ -1,31 +1,24 @@
 #include "sf_shader.h"
+#include "sf_shader_text.h"
 
-static const char* SF_SHADER_VERTEX_STRING = 
-"#version 330 core\n"
-"\n"
-"in vec4 al_pos;\n"
-"uniform mat4 al_projview_matrix;\n"
-"out vec4 gl_Position;\n"
-"out vec3 u_position;\n"
-"\n"
-"void main()\n"
-"{\n"
-"\tgl_Position = al_projview_matrix * al_pos;\n"
-"}\n";
+enum BLAZE_SHADER_TEXT
+{
+	BLAZE_SHADER_TEXT_UNIFORM,
+	BLAZE_SHADER_TEXT_U_POSITION,
+	BLAZE_SHADER_TEXT_U_RESOLUTION,
+	BLAZE_SHADER_TEXT_U_WORLD,
+	BLAZE_SHADER_TEXT_U_TIME,
+	BLAZE_SHADER_TEXT_COUNT
+};
 
-static const char* SF_SHADER_PIXEL_STRING_PREFIX =
-"#version 330 core\n"
-"\n"
-"out vec4 gl_FragColor;\n";
-
-
-const char* glsl_suffix_code =
-"\nvoid main()\n"
-"{\n"
-"    vec2 fragCoord = (gl_FragCoord.xy - u_position);\n"
-"    fragCoord.y = u_resolution.y - (u_world.y - fragCoord.y);\n"
-"    mainImage(gl_FragColor, fragCoord);\n"
-"}\n\n";
+static const char* SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_COUNT] =
+{
+	"uniform",
+	"u_position",
+	"u_resolution",
+	"u_world",
+	"u_time"
+};
 
 static int32_t sf_shader_generate_uniform_text(ALLEGRO_USTR* text, const sf_uniform_t* uniform)
 {
@@ -34,11 +27,14 @@ static int32_t sf_shader_generate_uniform_text(ALLEGRO_USTR* text, const sf_unif
 		return -1;
 	}
 
-	if (!al_ustr_append_cstr(text, "uniform ") ||
-		!al_ustr_append_cstr(text, SF_UNIFORM_NAME_STRS[uniform->m_type]) ||
-		!al_ustr_append_cstr(text, " ") ||
-		!al_ustr_append_cstr(text, uniform->m_name) || 
-		!al_ustr_append_cstr(text, ";\n"))
+	char buffer[256] = { 0 };
+
+	sprintf_s(buffer, sizeof(buffer), "%s %s %s;" BLAZE_NEWLINE_STR, 
+		SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_UNIFORM],
+		SF_UNIFORM_NAME_STRS[uniform->m_type], 
+		uniform->m_name);
+
+	if (!al_ustr_append_cstr(text, buffer))
 	{
 		return -1;
 	}
@@ -82,18 +78,18 @@ static int32_t sf_shader_process_line(ALLEGRO_USTR* text, blz_stringview_t line)
 	for (size_t i = 0; i < line.m_length; ++i)
 	{
 		int32_t c = (int32_t)line.m_data[i];
-		if (c == '\\' && i + 1 < line.m_length)
+		if (c == BLAZE_ESCAPE_CHAR && i + 1 < line.m_length)
 		{
 			int32_t next_c = (int32_t)line.m_data[i + 1];
 
-			if (next_c == 't')
+			if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_TAB)
 			{
-				c = '\t';
+				c = BLAZE_TAB_CHAR;
 				++i;
 			}
-			else if (next_c == 'n')
+			else if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_NEWLINE)
 			{
-				c = '\n';
+				c = BLAZE_NEWLINE_CHAR;
 				++i;
 			}
 			else
@@ -130,7 +126,7 @@ static int32_t sf_shader_generate_text(ALLEGRO_USTR* text, blz_stringview_t view
 		}
 	}
 
-	if (!al_ustr_append_cstr(text, "\n"))
+	if (!al_ustr_append_cstr(text, BLAZE_NEWLINE_STR))
 	{
 		return -1;
 	}
@@ -230,8 +226,8 @@ void sf_shader_render(ALLEGRO_SHADER* shader, sf_uniform_t* uniform, blz_vec2f_t
 	ALLEGRO_SHADER* current_shader = al_get_current_shader();
 	ALLEGRO_BITMAP* target = al_get_target_bitmap();
 	blz_sizef_t world = { (float)al_get_bitmap_width(target), (float)al_get_bitmap_height(target) };
-	sf_uniform_t* u_position = sf_uniform_get(uniform, "u_position");
-	sf_uniform_t* u_world = sf_uniform_get(uniform, "u_world");
+	sf_uniform_t* u_position = sf_uniform_get(uniform, SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_U_POSITION]);
+	sf_uniform_t* u_world = sf_uniform_get(uniform, SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_U_WORLD]);
 
 	al_use_shader(shader);
 
@@ -242,7 +238,7 @@ void sf_shader_render(ALLEGRO_SHADER* shader, sf_uniform_t* uniform, blz_vec2f_t
 
 	if (blz_math_is_equal_f(world.m_width, resolution.m_width) && blz_math_is_equal_f(world.m_height, resolution.m_height))
 	{
-		al_set_shader_float_vector("u_resolution", 2, &world.m_width, 1);
+		al_set_shader_float_vector(SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_U_RESOLUTION], 2, &world.m_width, 1);
 	}
 
 	al_draw_filled_rectangle(position.m_x, position.m_y, position.m_x + resolution.m_width, position.m_y + resolution.m_height, (ALLEGRO_COLOR) { 1.0f, 1.0f, 1.0f, 1.0f });

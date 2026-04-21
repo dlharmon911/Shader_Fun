@@ -163,7 +163,7 @@ static blz_stringview_t _blz_text_parse_preprocessor(blz_stringview_t line, blz_
 		line.m_data++;
 		line.m_length--;
 
-		if (c == '\n')
+		if (c == BLAZE_NEWLINE_CHAR)
 		{
 			break;
 		}
@@ -211,14 +211,14 @@ static blz_stringview_t _blz_text_get_token(blz_stringview_t line, blz_text_toke
 	return (blz_stringview_t) { line.m_length - 1, line.m_data + 1 };
 }
 
-static void _blz_text_parse_multiline_comment(const ALLEGRO_FONT* font, blz_stringview_t* line, blz_vec2f_t* position, const blz_text_info_t* info, bool* multiline_comment)
+static void _blz_text_parse_multiline_comment(const blz_font_t* font, blz_stringview_t* line, blz_vec2f_t position, int32_t* offset, const blz_text_info_t* info, bool* multiline_comment)
 {
 	size_t line_length = line->m_length;
 
 	// this is an already commented line, we just need to find the end of the comment if any and draw it
 	for (int32_t i = 0; i < line->m_length; ++i)
 	{
-		if (line->m_data[i] == '*' && i + 1 < line->m_length && line->m_data[i + 1] == '/')
+		if (line->m_data[i] == '*' && i + 1 < (int32_t)line->m_length && line->m_data[i + 1] == '/')
 		{
 			*multiline_comment = false;
 			line_length = (size_t)(i + 2);
@@ -226,12 +226,10 @@ static void _blz_text_parse_multiline_comment(const ALLEGRO_FONT* font, blz_stri
 		}
 	}
 
-	al_draw_textf(font, SF_TEXT_COLOR_COMMENT, position->m_x, position->m_y, 0, "%.*s", (int32_t)line_length, line->m_data);
+	blz_text_draw_tab_delimited(font, *line, position, offset, SF_TEXT_COLOR_COMMENT);
 
 	line->m_data += line_length;
 	line->m_length -= line_length;
-
-	position->m_x += (float)line_length * (float)al_get_text_width(font, "W");
 }
 
 
@@ -272,7 +270,7 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 	if (hdata->m_multiline_comment)
 	{
-		_blz_text_parse_multiline_comment(font->m_font, &line, &position, info, &hdata->m_multiline_comment);
+		_blz_text_parse_multiline_comment(font, &line, position, &offset, info, &hdata->m_multiline_comment);
 	}
 
 	while (line.m_length)
@@ -314,7 +312,7 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 		if (token.m_value.m_length)
 		{
-			blz_text_draw_tab_delimited(font, token.m_value, &position, &offset, color);
+			blz_text_draw_tab_delimited(font, token.m_value, position, &offset, color);
 		}
 	}
 }

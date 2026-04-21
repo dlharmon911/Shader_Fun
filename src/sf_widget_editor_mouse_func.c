@@ -16,16 +16,28 @@ static void sf_set_line_selection_point(const blz_widget_t* widget, const sf_dia
 		point->m_offset = 0;
 		return;
 	}
+	const blz_font_t* font = &data->m_fonts[BLAZE_FONT_ID_EDITOR];
 
-	int32_t mouse_line_pos = (int32_t)(((float)event.mouse.y - widget->m_position.m_y - data->m_editor_data.m_info.m_vertical_padding) / ((float)al_get_font_line_height(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font) + data->m_editor_data.m_info.m_line_spacing)) + data->m_editor_data.m_info.m_top_line;
+    float y_offset = widget->m_position.m_y + data->m_editor_data.m_info.m_vertical_padding;
+    float line_height = font->m_line_height + data->m_editor_data.m_info.m_line_spacing;
+    float y = (float)event.mouse.y - y_offset;
+	float line_pos = y / line_height;
+    float x_offset = widget->m_position.m_x + data->m_editor_data.m_info.m_horizontal_padding - data->m_editor_data.m_text_x_offset;
+    float x = (float)event.mouse.x - x_offset;
+    float char_pos = x / font->m_char_width;
 
+    int32_t mouse_offset_pos = (int32_t)char_pos;
+	int32_t mouse_line_pos = (int32_t)line_pos + data->m_editor_data.m_info.m_top_line;
+
+	// adjust within bounds
     mouse_line_pos = max(0, min(mouse_line_pos, line_count - 1));
 
     const blz_text_node_t* line = blz_text_get_line(data->m_editor_data.m_text, mouse_line_pos);
 
-    int32_t mouse_offset_pos = (int32_t)(((float)event.mouse.x - widget->m_position.m_x - data->m_editor_data.m_info.m_horizontal_padding + data->m_editor_data.m_text_x_offset) / (float)al_get_text_width(data->m_fonts[BLAZE_FONT_ID_EDITOR].m_font, "W"));
+	blz_stringview_t line_view = { al_ustr_size(line->m_text), al_cstr(line->m_text) };
 
-    mouse_offset_pos = max(0, min(mouse_offset_pos, (int32_t)al_ustr_size(line->m_text)));
+	// account for tabs in the line when calculating offset
+	mouse_offset_pos = blz_text_calculate_untabbed_offset(line_view, mouse_offset_pos);
 
     point->m_line = mouse_line_pos;
     point->m_offset = mouse_offset_pos;

@@ -176,6 +176,7 @@
     <ClInclude Include="include\sf_dialog_main.h" />
     <ClInclude Include="include\sf_shader.h" />
     <ClInclude Include="include\sf_shader_snippets.h" />
+    <ClInclude Include="include\sf_shader_text.h" />
     <ClInclude Include="include\sf_text_highlighter.h" />
     <ClInclude Include="include\sf_uniform.h" />
     <ClInclude Include="include\sf_widget_console.h" />

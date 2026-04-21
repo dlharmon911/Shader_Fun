@@ -3,16 +3,32 @@
 
 #include "blaze.h"
 
-enum
-{
-	BLAZE_TEXT_TAB_SIZE = 4
-};
-
 enum BLAZE_TEXT_SELECTION_TYPE
 {
 	BLAZE_TEXT_SELECTION_TYPE_NONE,
 	BLAZE_TEXT_SELECTION_TYPE_START_GRABBED,
 	BLAZE_TEXT_SELECTION_TYPE_SELECTED
+};
+
+#define BLAZE_NEWLINE_STR "\n"
+#define BLAZE_TAB_STR "\t"
+
+static const int32_t BLAZE_TAB_CHAR = '\t';
+static const int32_t BLAZE_NEWLINE_CHAR = '\n';
+static const int32_t BLAZE_ESCAPE_CHAR = '\\';
+static const int32_t BLAZE_ESCAPE_CHAR_SUFFIX_TAB = 't';
+static const int32_t BLAZE_ESCAPE_CHAR_SUFFIX_NEWLINE = 'n';
+
+enum BLAZE_TEXT_EDIT_OPTIONS
+{
+	BLAZE_TEXT_EDIT_OPTION_NONE,
+	BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION,
+	BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR,
+	BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD,
+	BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR,
+	BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE,
+	BLAZE_TEXT_EDIT_OPTION_MERGE_LINE,
+	BLAZE_TEXT_EDIT_OPTION_COUNT
 };
 
 typedef struct blz_text_node_tag_t
@@ -82,26 +98,12 @@ bool blz_text_merge(blz_text_node_t* a, blz_text_node_t** b);
 bool blz_text_split(blz_text_node_t** node, int32_t offset);
 void blz_text_draw(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info);
 void blz_text_draw_highlighted(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, const blz_text_highlighter_t* highlighter);
-void blz_text_draw_tab_delimited(const blz_font_t* font, blz_stringview_t text, blz_vec2f_t* position, int32_t* offset, const ALLEGRO_COLOR color);
-
+void blz_text_draw_tab_delimited(const blz_font_t* font, blz_stringview_t text, blz_vec2f_t position, int32_t* offset, const ALLEGRO_COLOR color);
 int32_t blz_text_cut_to_clipboard(blz_text_t* text, blz_text_info_t* info);
 int32_t blz_text_copy_to_clipboard(const blz_text_t* text, const blz_text_info_t* info);
-
-enum BLAZE_TEXT_EDIT_OPTIONS
-{
-	BLAZE_TEXT_EDIT_OPTION_NONE,
-	BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION,
-	BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR,
-	BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD,
-	BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR,
-	BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE,
-	BLAZE_TEXT_EDIT_OPTION_MERGE_LINE,
-	BLAZE_TEXT_EDIT_OPTION_COUNT
-};
-
 int32_t blz_text_edit(blz_text_t* text, blz_text_info_t* info, int32_t option, const void* value);
-
-
+int32_t blz_text_calculate_tabbed_offset(blz_stringview_t line, int32_t offset);
+int32_t blz_text_calculate_untabbed_offset(blz_stringview_t line, int32_t tabbed_offset);
 
 #endif // !_GUARD_BLAZE_TEXT_H_
 

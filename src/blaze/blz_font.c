@@ -58,16 +58,16 @@ static ALLEGRO_FONT* _blz_load_font_from_memory(void* data, size_t data_size, in
 	return font;
 }
 
-static int32_t _blz_create_font(blz_font_t* font_entry, int32_t new_size, int32_t i)
+static int32_t _blz_create_font(blz_font_t* font_entry, int32_t height, int32_t i)
 {
-	font_entry->m_font = _blz_load_font_from_memory(BLAZE_FONT_DATA[i], BLAZE_FONT_DATA_SIZE[i], new_size);
+	font_entry->m_font = _blz_load_font_from_memory(BLAZE_FONT_DATA[i], BLAZE_FONT_DATA_SIZE[i], height);
 
 	if (!font_entry->m_font)
 	{
 		return -1;
 	}
 	
-	font_entry->m_size = new_size;
+	font_entry->m_line_height = (float)height;
 	font_entry->m_char_width = (float)al_get_text_width(font_entry->m_font, "W");
 
 	return 0;
@@ -79,7 +79,8 @@ static void _blz_destroy_font(blz_font_t* font_entry)
 	{
 		al_destroy_font(font_entry->m_font);
 		font_entry->m_font = NULL;
-		font_entry->m_size = 0;
+		font_entry->m_line_height = 0.0f;
+		font_entry->m_char_width = 0.0f;
 	}
 }
 
@@ -99,16 +100,16 @@ int32_t blz_font_cache_load(blz_font_cache_t* cache)
 	for (int32_t id = 0; id < BLAZE_FONT_ID_COUNT; ++id)
 	{
 		(*cache)[id].m_font = NULL;
-		(*cache)[id].m_size = 0;
-		(*cache)[id].m_char_width = 0;
+		(*cache)[id].m_line_height = 0.0f;
+		(*cache)[id].m_char_width = 0.0f;
 	}
 
 	for (int32_t id = 0; id < BLAZE_FONT_ID_COUNT; ++id)
 	{
 		blz_font_t* font_entry = &((*cache)[id]);
-		int32_t new_size = BLAZE_DEFAULT_FONT_HEIGHTS[id];
+		int32_t height = BLAZE_DEFAULT_FONT_HEIGHTS[id];
 
-		if (_blz_create_font(font_entry, new_size, id) != 0)
+		if (_blz_create_font(font_entry, height, id) != 0)
 		{
 			DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to load font with ID %zu", id);
 			return -1;
@@ -140,25 +141,26 @@ void blz_font_increment_size(blz_font_cache_t* cache, int32_t id)
 	}
 
 	blz_font_t* font_entry = &((*cache)[id]);
-	int32_t new_size = font_entry->m_size;
+	int32_t new_height = (int32_t)font_entry->m_line_height;
 	
-	if (font_entry->m_size < BLAZE_FONT_MAX_SIZE)
+	if (font_entry->m_line_height < BLAZE_FONT_MAX_SIZE)
 	{
-		if (font_entry->m_size < 12)
+		if (font_entry->m_line_height < 12)
 		{
-			++new_size;
+			++new_height;
 		}
 		else
 		{
-			new_size += 2;
+			new_height += 2;
 		}
 
 		_blz_destroy_font(font_entry);
 
-		if (_blz_create_font(font_entry, new_size, id) != 0)
+		if (_blz_create_font(font_entry, new_height, id) != 0)
 		{
 			DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to load font with ID %zu", id);
-			font_entry->m_size = 0;
+			font_entry->m_line_height = 0.0f;
+			font_entry->m_char_width = 0.0f;
 			return;
 		}
 	}
@@ -171,25 +173,25 @@ void blz_font_decrement_size(blz_font_cache_t* cache, int32_t id)
 		return;
 	}
 	blz_font_t* font_entry = &((*cache)[id]);
-	int32_t new_size = font_entry->m_size;
+	int32_t new_height = (int32_t)font_entry->m_line_height;
 	
-	if (font_entry->m_size > BLAZE_FONT_MIN_SIZE)
+	if (font_entry->m_line_height > BLAZE_FONT_MIN_SIZE)
 	{
-		if (font_entry->m_size <= 12)
+		if (font_entry->m_line_height <= 12)
 		{ 
-			--new_size;
+			--new_height;
 		}
 		else
 		{
-			new_size -= 2;
+			new_height -= 2;
 		}
 
 		_blz_destroy_font(font_entry);
 
-		if (_blz_create_font(font_entry, new_size, id) != 0)
+		if (_blz_create_font(font_entry, new_height, id) != 0)
 		{
 			DO_LOG(BLAZE_LOG_LEVEL_ERROR, "Failed to load font with ID %zu", id);
-			font_entry->m_size = 0;
+			font_entry->m_line_height = 0;
 			return;
 		}
 	}

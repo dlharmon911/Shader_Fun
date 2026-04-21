@@ -187,7 +187,7 @@ static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVE
 
 static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t c = '\t';
+    int32_t c = BLAZE_TAB_CHAR;
     int32_t result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, &c);
 
     if (result == 0)

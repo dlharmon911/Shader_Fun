@@ -13,7 +13,7 @@ static blz_stringview_t _blz_text_get_line(blz_stringview_t line, blz_stringview
 		line.m_data++;
 		line.m_length--;
 	
-		if (c == '\n')
+		if (c == BLAZE_NEWLINE_CHAR)
 		{
 			break;
 		}
@@ -173,7 +173,7 @@ blz_text_t* blz_text_clone(const blz_text_t* text)
 		return NULL;
 	}
 
-	char* cstr = blz_text_to_cstr(text, "\n");
+	char* cstr = blz_text_to_cstr(text, BLAZE_NEWLINE_STR);
 
 	if (!cstr)
 	{
@@ -485,37 +485,46 @@ static void _blz_text_draw_selection(const blz_font_t* font, const blz_text_node
 
 		if (line_index >= a->m_line && line_index <= b->m_line)
 		{
-			float start_x = position.m_x;
-			float end_x = position.m_x + font->m_char_width * (float)al_ustr_size(current->m_text);
+			int32_t start_offset = 0;
+			int32_t end_offset = (int32_t)al_ustr_size(current->m_text);
 
 			if (line_index == a->m_line)
 			{
-				start_x += font->m_char_width * (float)a->m_offset;
+				start_offset = a->m_offset;
 			}
 
 			if (line_index == b->m_line)
 			{
-				end_x = position.m_x + font->m_char_width * (float)b->m_offset;
+				end_offset = b->m_offset;
 			}
 
-			al_draw_filled_rectangle(start_x, position.m_y, end_x, position.m_y + line_height, BLAZE_TEXT_COLOR_SELECTED);
+			blz_stringview_t line = { al_ustr_size(current->m_text), al_cstr(current->m_text) };
+
+			start_offset = blz_text_calculate_tabbed_offset(line, start_offset);
+			end_offset = blz_text_calculate_tabbed_offset(line, end_offset);
+
+			float x1 = position.m_x + font->m_char_width * (float)start_offset;
+			float x2 = position.m_x + font->m_char_width * (float)end_offset;
+
+			al_draw_filled_rectangle(x1, position.m_y, x2, position.m_y + line_height, BLAZE_TEXT_COLOR_SELECTED);
 		}
 	}
 }
 
-static void _blz_text_draw_cursor(int32_t line_index, blz_vec2f_t position, float line_height, const blz_text_info_t* info)
+static void _blz_text_draw_cursor(const blz_font_t* font, blz_stringview_t line, float line_height, blz_vec2f_t position, const blz_text_info_t* info)
 {
-	if (line_index == info->m_cursor.m_line)
-	{
-		ALLEGRO_COLOR color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ALLEGRO_COLOR color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	int32_t offset = info->m_cursor.m_offset;
+	offset = blz_text_calculate_tabbed_offset(line, offset);
+	float x = position.m_x + font->m_char_width * (float)offset;
 
-		if (((int32_t)(al_get_time() * 4.0)) % 2)
-		{
-			color = info->m_color;
-			color.a = 1.0f;
-		}
-		al_draw_line(position.m_x, position.m_y, position.m_x, position.m_y + line_height, color, 1.0f);
+	if (((int32_t)(al_get_time() * 4.0)) % 2)
+	{
+		color = info->m_color;
+		color.a = 1.0f;
 	}
+
+	al_draw_line(x, position.m_y, x, position.m_y + line_height, color, 1.0f);
 }
 
 void blz_text_draw_highlighted(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, const blz_text_highlighter_t* highlighter)
@@ -525,7 +534,7 @@ void blz_text_draw_highlighted(const blz_font_t* font, const blz_text_t* text, b
 		return;
 	}
 
-	float line_height = (float)al_get_font_line_height(font->m_font) + info->m_line_spacing;
+	float line_height = font->m_line_height + info->m_line_spacing;
 	float visible_height = size.m_height - info->m_vertical_padding * 2.0f;
 	size_t visible_line_count = (size_t)(visible_height / line_height);
 	position.m_x += info->m_horizontal_padding;
@@ -568,15 +577,12 @@ void blz_text_draw_highlighted(const blz_font_t* font, const blz_text_t* text, b
 		else
 		{
 			int32_t temp_offset = 0;
-			blz_text_draw_tab_delimited(font, line_view, &position, &temp_offset, info->m_color);
+			blz_text_draw_tab_delimited(font, line_view, position, &temp_offset, info->m_color);
 		}
-
-		float cursor_x = position.m_x + (float)(info->m_cursor.m_offset) * font->m_char_width;
-		blz_vec2f_t cursor_position = { cursor_x, position.m_y };
 
 		if (line_index == info->m_cursor.m_line)
 		{
-			_blz_text_draw_cursor(line_index, cursor_position, line_height, info);
+			_blz_text_draw_cursor(font, line_view, line_height, position, info);
 		}
 
 		position.m_y += line_height;
@@ -1208,7 +1214,7 @@ static int32_t _blz_text_edit_insert_char(blz_text_t* text, blz_text_info_t* inf
 		return -1;
 	}
 
-	if (*value == '\t' || (*value >= 0x20 && *value < 0x7f))
+	if (*value == BLAZE_TAB_CHAR || (*value >= 0x20 && *value < 0x7f))
 	{
 		if (info->m_selection.m_type != BLAZE_TEXT_SELECTION_TYPE_NONE)
 		{
@@ -1328,35 +1334,97 @@ int32_t blz_text_edit(blz_text_t* text, blz_text_info_t* info, int32_t option, c
 	return result;
 }
 
-void blz_text_draw_tab_delimited(const blz_font_t* font, blz_stringview_t text, blz_vec2f_t* position, int32_t* offset, const ALLEGRO_COLOR color)
+static void blz_text_draw_tab_section(const blz_font_t* font, blz_stringview_t section, blz_vec2f_t position, int32_t* offset, const ALLEGRO_COLOR color)
 {
-	while (text.m_length)
-	{
-		blz_stringview_t section = { 0, text.m_data };
+	float x = position.m_x + font->m_char_width * (float)(*offset);
 
-		while (section.m_length < text.m_length)
+	al_draw_textf(font->m_font, color, x, position.m_y, 0, "%.*s", section.m_length, section.m_data);
+
+	(*offset) += (int32_t)section.m_length;
+}
+
+void blz_text_draw_tab_delimited(const blz_font_t* font, blz_stringview_t text, blz_vec2f_t position, int32_t* offset, const ALLEGRO_COLOR color)
+{
+	for (int32_t i = 0; i < text.m_length; ++i)
+	{
+		if (text.m_data[i] == BLAZE_TAB_CHAR)
 		{
-			if (section.m_data[0] == '\t')
+			if (i > 0)
 			{
-				break;
+				blz_stringview_t section = { (size_t)i, text.m_data };
+				blz_text_draw_tab_section(font, section, position, offset, color);
+
+				i = -1;
+				text.m_data += section.m_length;
+				text.m_length -= section.m_length;
 			}
 
-			++section.m_length;
+			int32_t t = ((*offset) % 4);
+			if (t == 0)
+			{
+				t = 4;
+			}
+			(*offset) += t;
 			++text.m_data;
 			--text.m_length;
 		}
+	}
 
-		if (section.m_data[0] == '\t')
+	if (text.m_length > 0)
+	{
+		blz_text_draw_tab_section(font, text, position, offset, color);
+	}
+}
+
+int32_t blz_text_calculate_tabbed_offset(blz_stringview_t line, int32_t offset)
+{
+	int32_t tabbed_offset = 0;
+
+	offset = min(offset, (int32_t)line.m_length);
+
+	for (int32_t i = 0; i < offset; ++i)
+	{
+		char c = line.m_data[i];
+
+		if (c == BLAZE_TAB_CHAR)
 		{
-			position->m_x += font->m_char_width;
-			++text.m_data;
-			--text.m_length;
-			++(*offset);
+			int32_t t = (tabbed_offset % 4);
+			if (t == 0)
+			{
+				t = 4;
+			}
+
+			tabbed_offset += (t - 1);
+		}
+
+		++tabbed_offset;
+	}
+
+	return tabbed_offset;
+}
+
+int32_t blz_text_calculate_untabbed_offset(blz_stringview_t line, int32_t tabbed_offset)
+{
+	int32_t untabbed_offset = 0;
+	int32_t current_tabbed_offset = 0;
+	for (size_t i = 0; i < line.m_length; ++i)
+	{
+		if (current_tabbed_offset >= tabbed_offset)
+		{
 			break;
 		}
-
-		al_draw_textf(font->m_font, color, position->m_x, position->m_y, 0, "%.*s", section.m_length, section.m_data);
-		position->m_x += font->m_char_width * (float)section.m_length;
-		(*offset) += (int32_t)section.m_length;
+		char c = line.m_data[i];
+		if (c == BLAZE_TAB_CHAR)
+		{
+			int32_t t = (current_tabbed_offset % 4);
+			if (t == 0)
+			{
+				t = 4;
+			}
+			current_tabbed_offset += (t - 1);
+		}
+		++current_tabbed_offset;
+		++untabbed_offset;
 	}
+	return untabbed_offset;
 }
