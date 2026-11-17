@@ -5,15 +5,56 @@ enum glsl_token_type
 {
 	GLSL_TOKEN_TYPE_IDENTIFIER,
 	GLSL_TOKEN_TYPE_NUMBER,
+	GLSL_TOKEN_TYPE_OPERATOR,
 	GLSL_TOKEN_TYPE_COMMENT,
 	GLSL_TOKEN_TYPE_PREPROCESSOR,
 	GLSL_TOKEN_TYPE_OTHER
 };
 
+enum SF_TEXT_COLOR
+{
+	SF_TEXT_COLOR_KEYWORD,
+	SF_TEXT_COLOR_FUNCTION,
+	SF_TEXT_COLOR_NUMBER,
+	SF_TEXT_COLOR_OPERATOR,
+	SF_TEXT_COLOR_COMMENT,
+	SF_TEXT_COLOR_PREPROCESSOR,
+	SF_TEXT_COLOR_UNKNOWN_IDENTIFIER,
+	SF_TEXT_COLOR_DEFAULT,
+	SF_TEXT_COLOR_COUNT
+};
+
+static const ALLEGRO_COLOR _SF_TEXT_COLORS_LIGHT_MODE[SF_TEXT_COLOR_COUNT] =
+{
+	{ 0.0f, 0.0f, 1.0f, 1.0f },		// SF_TEXT_COLOR_KEYWORD
+	{ 0.6f, 0.0f, 1.0f, 1.0f },		// SF_TEXT_COLOR_FUNCTION
+	{ 1.0f, 0.0f, 0.0f, 1.0f },		// SF_TEXT_COLOR_NUMBER
+	{ 0.5f, 0.0f, 0.5f, 1.0f },		// SF_TEXT_COLOR_OPERATOR
+	{ 0.0f, 0.4f, 0.0f, 1.0f },		// SF_TEXT_COLOR_COMMENT
+	{ 0.5f, 0.5f, 0.5f, 1.0f },		// SF_TEXT_COLOR_PREPROCESSOR
+	{ 0.35f, 0.2f, 0.35f, 1.0f },	// SF_TEXT_COLOR_UNKNOWN_IDENTIFIER
+	{ 0.0f, 0.0f, 0.0f, 1.0f }		// SF_TEXT_COLOR_DEFAULT
+};
+
+static const ALLEGRO_COLOR _SF_TEXT_COLORS_DARK_MODE[SF_TEXT_COLOR_COUNT] =
+{
+	{ 0.5f, 0.5f, 1.0f, 1.0f },		// SF_TEXT_COLOR_KEYWORD
+	{ 0.8f, 0.6f, 1.0f, 1.0f },		// SF_TEXT_COLOR_FUNCTION
+	{ 1.0f, 0.5f, 0.5f, 1.0f },		// SF_TEXT_COLOR_NUMBER
+	{ 1.0f, 0.5f, 1.0f, 1.0f },		// SF_TEXT_COLOR_OPERATOR
+	{ 0.5f, 1.0f, 0.5f, 1.0f },		// SF_TEXT_COLOR_COMMENT
+	{ 0.7f, 0.7f, 0.7f, 1.0f },		// SF_TEXT_COLOR_PREPROCESSOR
+	{ 1.0f, 0.8f, 1.0f, 1.0f },		// SF_TEXT_COLOR_UNKNOWN_IDENTIFIER
+	{ 1.0f, 1.0f, 1.0f, 1.0f }		// SF_TEXT_COLOR_DEFAULT
+};
+
+static const ALLEGRO_COLOR* _SF_TEXT_COLORS = _SF_TEXT_COLORS_LIGHT_MODE;
+
 enum
 {
 	BLAZE_TEXT_KEYWORD_COUNT = 78,
-	BLAZE_TEXT_FUNCTION_NAME_COUNT = 28
+	BLAZE_TEXT_FUNCTION_NAME_COUNT = 28,
+	BLAZE_TEXT_OPERATOR_COUNT = 51
 };
 
 const blz_stringview_t glsl_keywords[BLAZE_TEXT_KEYWORD_COUNT] =
@@ -46,23 +87,44 @@ const blz_stringview_t glsl_function_name[BLAZE_TEXT_FUNCTION_NAME_COUNT] =
 	{ 4, "step" }, { 3, "tan" }
 };
 
-typedef struct blz_text_token_t
+const blz_stringview_t glsl_operator[BLAZE_TEXT_OPERATOR_COUNT] =
+{
+	// 3-character operators
+	{ 3, "<<=" },{ 3, ">>=" },
+
+	// 2-character operators
+	{ 2, "++" }, { 2, "--" }, { 2, "+=" }, { 2, "-=" }, { 2, "*=" },
+	{ 2, "/=" }, { 2, "%=" }, { 2, "==" }, { 2, "!=" }, { 2, "<=" },
+	{ 2, ">=" }, { 2, "&&" }, { 2, "||" }, { 2, "^^" }, { 2, "&=" },
+	{ 2, "|=" }, { 2, "^=" }, { 2, "?:" }, { 2, "<<" }, { 2, ">>" },
+	{ 2, "->" }, { 2, "<<" }, { 2, ">>" }, { 2, "()" }, { 2, "[]" },
+	{ 2, "{}" },
+	
+	// 1-character operators
+	{ 1, "+" }, { 1, "-" }, { 1, "*" }, { 1, "/" }, { 1, "%" }, 
+	{ 1, "=" },	{ 1, "<" }, { 1, ">" }, { 1, "!" }, { 1, "&" }, 
+	{ 1, "|" }, { 1, "^" }, { 1, "." }, { 1, "(" }, { 1, ")" }, 
+	{ 1, "[" }, { 1, "]" }, { 1, "{" },	{ 1, "}" }, { 1, "," }, 
+	{ 1, ";" }, { 1, ":" }, { 1, "~" }
+};
+
+typedef struct blz_text_token_tag_t
 {
 	blz_stringview_t m_value;
 	int32_t m_type;
 } blz_text_token_t;
 
 
-static bool _blz_text_is_name(blz_stringview_t text, const blz_stringview_t* names, size_t count)
+static bool _blz_text_is_stringview_array(blz_stringview_t text, const blz_stringview_t* data, size_t count)
 {
-	if (!text.m_length || !names || !count)
+	if (!text.m_length || !data || !count)
 	{
 		return false;
 	}
 
-	for (size_t i = 0; i < count && text.m_data[0] >= names[i].m_data[0]; ++i)
+	for (size_t i = 0; i < count && text.m_data[0] >= data[i].m_data[0]; ++i)
 	{
-		if (blz_stringview_equals(names[i], text))
+		if (blz_stringview_equals(data[i], text))
 		{
 			return true;
 		}
@@ -117,6 +179,35 @@ static blz_stringview_t _blz_text_parse_number(blz_stringview_t line, blz_text_t
 	return line;
 }
 
+static blz_stringview_t _blz_text_parse_operator(blz_stringview_t line, blz_text_token_t* token)
+{
+	token->m_type = GLSL_TOKEN_TYPE_OPERATOR;
+	token->m_value.m_data = line.m_data;
+	token->m_value.m_length = 0;
+
+	for (int32_t i = 0; i < BLAZE_TEXT_OPERATOR_COUNT; ++i)
+	{
+		blz_stringview_t op = glsl_operator[i];
+
+		if (line.m_length < op.m_length)
+		{
+			continue;
+		}
+
+		blz_stringview_t prefix = { op.m_length, line.m_data };
+
+		if (0 == blz_stringview_compare(op, prefix))
+		{
+			line.m_data += op.m_length;
+			line.m_length -= op.m_length;
+			token->m_value.m_length = op.m_length;
+			break;
+		}
+	}
+
+	return line;
+}
+
 static blz_stringview_t _blz_text_parse_comment(blz_stringview_t line, blz_text_token_t* token, bool* multiline_comment)
 {
 	token->m_type = GLSL_TOKEN_TYPE_COMMENT;
@@ -128,11 +219,11 @@ static blz_stringview_t _blz_text_parse_comment(blz_stringview_t line, blz_text_
 		// we are already in a multiline comment, just find the end of it
 		for (int32_t i = 0; i < line.m_length; ++i)
 		{
-			if (line.m_data[i] == '*' && i + 1 < line.m_length && line.m_data[i + 1] == '/')
+			if (line.m_data[i] == '*' && (size_t)(i + 1) < line.m_length && line.m_data[i + 1] == '/')
 			{
 				*multiline_comment = false;
 				line.m_data += i + 2;
-				line.m_length -= i + 2;
+				line.m_length -= (size_t)(i + 2);
 				token->m_value.m_length = (size_t)(i + 2);
 				return line;
 			}
@@ -186,7 +277,9 @@ static blz_stringview_t _blz_text_get_token(blz_stringview_t line, blz_text_toke
 	{
 		return _blz_text_parse_identifier(line, token);
 	}
-	else if ((c >= '0' && c <= '9') || (c == '.' && line.m_length > 1 && (line.m_data[1] >= '0' && line.m_data[1] <= '9')))
+	else if ((c >= '0' && c <= '9') || 
+		(c == '-' && line.m_length > 1 && (line.m_data[1] >= '0' && line.m_data[1] <= '9')) ||
+		(c == '.' && line.m_length > 1 && (line.m_data[1] >= '0' && line.m_data[1] <= '9')))
 	{
 		return _blz_text_parse_number(line, token);
 	}
@@ -202,6 +295,12 @@ static blz_stringview_t _blz_text_get_token(blz_stringview_t line, blz_text_toke
 	else if (c == '#' && line.m_length > 1)
 	{
 		return _blz_text_parse_preprocessor(line, token);
+	}
+	else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' ||
+		c == '=' || c == '<' || c == '>' || c == '!' || c == '&' ||
+		c == '|' || c == '^')
+	{
+		return _blz_text_parse_operator(line, token);
 	}
 
 	token->m_type = GLSL_TOKEN_TYPE_OTHER;
@@ -226,7 +325,7 @@ static void _blz_text_parse_multiline_comment(const blz_font_t* font, blz_string
 		}
 	}
 
-	blz_text_draw_tab_delimited(font, *line, position, offset, SF_TEXT_COLOR_COMMENT);
+	blz_text_draw_line_tab_delimited(font, *line, position, offset, _SF_TEXT_COLORS[SF_TEXT_COLOR_COMMENT]);
 
 	line->m_data += line_length;
 	line->m_length -= line_length;
@@ -275,24 +374,24 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 	while (line.m_length)
 	{
-		ALLEGRO_COLOR color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		size_t color = SF_TEXT_COLOR_DEFAULT;
 		line = _blz_text_get_token(line, &token, &hdata->m_multiline_comment);
 
 		switch (token.m_type)
 		{
 		case GLSL_TOKEN_TYPE_IDENTIFIER:
 		{
-			if (_blz_text_is_name(token.m_value, glsl_keywords, BLAZE_TEXT_KEYWORD_COUNT))
+			if (_blz_text_is_stringview_array(token.m_value, glsl_keywords, BLAZE_TEXT_KEYWORD_COUNT))
 			{
 				color = SF_TEXT_COLOR_KEYWORD;
 			}
-			else if (_blz_text_is_name(token.m_value, glsl_function_name, BLAZE_TEXT_FUNCTION_NAME_COUNT))
+			else if (_blz_text_is_stringview_array(token.m_value, glsl_function_name, BLAZE_TEXT_FUNCTION_NAME_COUNT))
 			{
 				color = SF_TEXT_COLOR_FUNCTION;
 			}
 			else
 			{
-				color = SF_TEXT_COLOR_DEFAULT;
+				color = SF_TEXT_COLOR_UNKNOWN_IDENTIFIER;
 			}
 		} break;
 		case GLSL_TOKEN_TYPE_NUMBER:
@@ -303,6 +402,10 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 		{
 			color = SF_TEXT_COLOR_COMMENT;
 		} break;
+		case GLSL_TOKEN_TYPE_OPERATOR:
+		{
+			color = SF_TEXT_COLOR_OPERATOR;
+		} break;
 		case GLSL_TOKEN_TYPE_PREPROCESSOR:
 		{
 			color = SF_TEXT_COLOR_PREPROCESSOR;
@@ -312,7 +415,7 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 		if (token.m_value.m_length)
 		{
-			blz_text_draw_tab_delimited(font, token.m_value, position, &offset, color);
+			blz_text_draw_line_tab_delimited(font, token.m_value, position, &offset, _SF_TEXT_COLORS[color]);
 		}
 	}
 }

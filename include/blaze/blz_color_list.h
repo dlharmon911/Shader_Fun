@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-typedef struct blz_color_entry_t
+typedef struct blz_color_entry_tag_t
 {
 	const char* m_name;
 	uint32_t m_rgba;

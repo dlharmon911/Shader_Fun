@@ -4,7 +4,7 @@
 #include "blaze/blz_common.h"
 #include "blaze/blz_shapes.h"
 
-typedef struct blz_widget_t blz_widget_t;
+typedef struct blz_widget_tag_t blz_widget_t;
 
 typedef int32_t(*blz_widget_initialize_func_t)(blz_widget_t* widget, void* data);
 typedef void(*blz_widget_uninitialize_func_t)(blz_widget_t* widget, void* event_data);
@@ -14,7 +14,7 @@ typedef void(*blz_widget_update_func_t)(blz_widget_t* widget, void* data);
 typedef void(*blz_widget_render_func_t)(const blz_widget_t* widget, const void* data);
 typedef bool(*blz_widget_on_event_func_t)(blz_widget_t* widget, ALLEGRO_EVENT event, void* event_data);
 
-typedef struct blz_widget_vtable_t
+typedef struct blz_widget_vtable_tag_t
 {
 	blz_widget_initialize_func_t m_initialize;
 	blz_widget_uninitialize_func_t m_uninitialize;
@@ -25,7 +25,7 @@ typedef struct blz_widget_vtable_t
 	blz_widget_on_event_func_t m_on_event;
 } blz_widget_vtable_t;
 
-typedef struct blz_widget_t
+typedef struct blz_widget_tag_t
 {
 	const blz_widget_vtable_t* m_table;
 	blz_vec2f_t m_position;

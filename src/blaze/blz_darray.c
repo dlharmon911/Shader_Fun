@@ -2,7 +2,7 @@
 #include "blaze/blz_common.h"
 #include "blaze/blz_darray.h"
 
-typedef struct blz_darray_header_t
+typedef struct blz_darray_header_tag_t
 {
 	size_t m_size;
 	size_t m_capacity;

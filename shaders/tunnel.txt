@@ -1,0 +1,88 @@
+// 2D rotation matrix helper
+mat2 rot(float a) {
+    float s = sin(a), c = cos(a);
+    return mat2(c, -s, s, c);
+}
+
+// Cosine-based procedural color palette
+vec3 palette(float t) {
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(1.0, 1.0, 1.0);
+    vec3 d = vec3(0.263, 0.416, 0.557);
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
+// Signed Distance Function (SDF) for the repeating geometric structures
+float map(vec3 p) {
+    // Twist the space along the Z-axis
+    p.xy *= rot(p.z * 0.15 + u_time * 0.2);
+    
+    // Create an infinite repeating grid of cells
+    vec3 q = p;
+    q.z = mod(q.z, 2.0) - 1.0;
+    q.xy = mod(q.xy + 1.5, 3.0) - 1.5;
+    
+    // Hollow out the center so the camera has a tunnel to fly through
+    float tunnelClearance = length(p.xy) - 1.4;
+    
+    // Octahedron / cross-like mechanical rings
+    vec3 d = abs(q) - vec3(0.35, 0.35, 0.15);
+    float box = length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0);
+    
+    // Carve a hole in the center of each repeating block
+    float hole = length(q.xy) - 0.25;
+    float structure = max(box, -hole);
+    
+    // Combine with the main tunnel boundary
+    return max(structure, -tunnelClearance);
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    // Normalize pixel coordinates (from -1 to 1, aspect-ratio corrected)
+    vec2 uv = (fragCoord * 2.0 - u_resolution.xy) / u_resolution.y;
+    
+    // Camera setup: moving forward continuously along Z
+    vec3 ro = vec3(0.0, 0.0, u_time * 3.0);
+    
+    // Add a subtle camera sway
+    ro.x += sin(u_time * 0.7) * 0.3;
+    ro.y += cos(u_time * 0.5) * 0.3;
+    
+    // Ray direction with slight lens distortion
+    vec3 rd = normalize(vec3(uv, 1.2));
+    rd.xy *= rot(sin(u_time * 0.3) * 0.2);
+
+    float t = 0.0;       // Total distance traveled
+    vec3 col = vec3(0.0); // Accumulated color
+
+    // Raymarching loop
+    for (int i = 0; i < 80; i++) {
+        vec3 p = ro + rd * t;
+        
+        // Apply a gentle wave to the tunnel path
+        p.x += sin(p.z * 0.2) * 0.6;
+        p.y += cos(p.z * 0.2) * 0.6;
+        
+        float d = map(p);
+        
+        // Accumulate "glow" every time the ray passes close to a surface
+        // Dividing by a small number creates a bright neon aura around edges
+        vec3 glowColor = palette(p.z * 0.05 + u_time * 0.1);
+        col += glowColor * (0.008 / (0.02 + abs(d)));
+        
+        // Advance the ray (step slightly smaller than d to prevent overstepping artifacts)
+        t += max(abs(d) * 0.7, 0.01);
+        
+        // Stop if the ray goes too far
+        if (t > 40.0) break;
+    }
+
+    // Apply distance fog to fade the far end smoothly into darkness
+    col *= exp(-0.06 * t);
+    
+    // Tone mapping & gamma correction for vibrant contrast
+    col = pow(col, vec3(1.1));
+    
+    fragColor = vec4(col, 1.0);
+}

@@ -30,7 +30,7 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, edit_type, 0);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
 
     (void)edit_result; // Silence unused variable warning
 
@@ -72,7 +72,7 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    int32_t edit_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, edit_type, 0);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
 
     (void)edit_result; // Silence unused variable warning
 
@@ -88,15 +88,25 @@ static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT 
     {
         return true;
     }
+    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+	blz_stringview_t line_view = (blz_stringview_t)
+    {
+        .m_data = al_cstr(line),
+        .m_length = al_ustr_size(line)
+    };
+	int32_t offset = blz_text_calculate_tabbed_offset(line_view, data->m_editor_data.m_info.m_cursor.m_offset);
+
     --data->m_editor_data.m_info.m_cursor.m_line;
 
-    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+    line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+	line_view.m_data = al_cstr(line);
+	line_view.m_length = al_ustr_size(line);
 
-    int32_t line_length = (int32_t)al_ustr_size(line);
+	data->m_editor_data.m_info.m_cursor.m_offset = blz_text_calculate_untabbed_offset(line_view, offset);
 
-    if (data->m_editor_data.m_info.m_cursor.m_offset >= line_length)
+    if (data->m_editor_data.m_info.m_cursor.m_offset >= (int32_t)line_view.m_length)
     {
-        data->m_editor_data.m_info.m_cursor.m_offset = line_length;
+        data->m_editor_data.m_info.m_cursor.m_offset = (int32_t)line_view.m_length;
     }
     return true;
 }
@@ -104,6 +114,13 @@ static bool sf_widget_editor_process_key_up(blz_widget_t* widget, ALLEGRO_EVENT 
 static bool sf_widget_editor_process_key_down(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
 	int32_t line_count = (int32_t)blz_text_get_line_count(data->m_editor_data.m_text);
+    const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+    blz_stringview_t line_view = (blz_stringview_t)
+    {
+        .m_data = al_cstr(line),
+        .m_length = al_ustr_size(line)
+    };
+    int32_t offset = blz_text_calculate_tabbed_offset(line_view, data->m_editor_data.m_info.m_cursor.m_offset);
 
     if (data->m_editor_data.m_info.m_cursor.m_line >= line_count - 1)
     {
@@ -112,13 +129,15 @@ static bool sf_widget_editor_process_key_down(blz_widget_t* widget, ALLEGRO_EVEN
 
     ++data->m_editor_data.m_info.m_cursor.m_line;
 
-	const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+    line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
+    line_view.m_data = al_cstr(line);
+    line_view.m_length = al_ustr_size(line);
 
-    int32_t line_length = (int32_t)al_ustr_size(line);
+    data->m_editor_data.m_info.m_cursor.m_offset = blz_text_calculate_untabbed_offset(line_view, offset);
 
-    if (data->m_editor_data.m_info.m_cursor.m_offset >= line_length)
+    if (data->m_editor_data.m_info.m_cursor.m_offset >= (int32_t)line_view.m_length)
     {
-        data->m_editor_data.m_info.m_cursor.m_offset = line_length;
+        data->m_editor_data.m_info.m_cursor.m_offset = (int32_t)line_view.m_length;
     }
 
     return true;
@@ -132,6 +151,7 @@ static bool sf_widget_editor_process_key_left(blz_widget_t* widget, ALLEGRO_EVEN
         {
 			return true;
         }
+
         --data->m_editor_data.m_info.m_cursor.m_line;
 
         const ALLEGRO_USTR* line = blz_text_get_line(data->m_editor_data.m_text, data->m_editor_data.m_info.m_cursor.m_line)->m_text;
@@ -157,6 +177,7 @@ static bool sf_widget_editor_process_key_right(blz_widget_t* widget, ALLEGRO_EVE
         {
             return true;
         }
+
         ++data->m_editor_data.m_info.m_cursor.m_line;
         data->m_editor_data.m_info.m_cursor.m_offset = 0;
     }
@@ -175,7 +196,7 @@ static bool sf_widget_editor_process_key_escape(blz_widget_t* widget, ALLEGRO_EV
 
 static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t split_result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, 0);
+	int32_t split_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
 
 	(void)split_result; // Silence unused variable warning
 
@@ -188,7 +209,7 @@ static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVE
 static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
     int32_t c = BLAZE_TAB_CHAR;
-    int32_t result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, &c);
+    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, data->m_editor_data.m_text, &data->m_editor_data.m_info, c);
 
     if (result == 0)
     {
@@ -243,7 +264,7 @@ static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVEN
 static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
     int32_t c = event.keyboard.unichar;
-	int32_t result = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, &c);
+	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, data->m_editor_data.m_text, &data->m_editor_data.m_info, c);
 
     if (result == 0)
     {
@@ -275,7 +296,7 @@ static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLE
 
 static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t pasted = blz_text_edit(data->m_editor_data.m_text, &data->m_editor_data.m_info, BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD, 0);
+	int32_t pasted = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
 
 	(void)pasted; // Silence unused variable warning
 

@@ -163,7 +163,15 @@ void blz_draw_frame_f(float x, float y, float w, float h, int32_t frame_type, in
 		const blz_frame_theme_t* theme = blz_frame_get_current_theme();
 		uint32_t background = ((const uint32_t*)theme)[BLAZE_FRAME_THEME_COLOR_BACKGROUND];
 
-		if (frame_type == BLAZE_FRAME_TYPE_WORKSPACE)
+		if (frame_type == BLAZE_FRAME_TYPE_WHITE)
+		{
+			background = 0xffffffffU;
+		}
+		else if (frame_type == BLAZE_FRAME_TYPE_BLACK)
+		{
+			background = 0x000000ffU;
+		}
+		else if (frame_type == BLAZE_FRAME_TYPE_WORKSPACE)
 		{
 			background = ((const uint32_t*)theme)[BLAZE_FRAME_THEME_COLOR_WORKSPACE];
 		}

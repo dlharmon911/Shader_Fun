@@ -1,0 +1,175 @@
+// --- PROCEDURAL NOISE & FBM ---
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(
+        mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
+        mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
+        u.y
+    );
+}
+
+// 2D rotation matrix to break up grid alignment in noise octaves
+const mat2 m2 = mat2(0.8, -0.6, 0.6, 0.8);
+
+// Multi-octave water wave heightfield
+float waterHeight(vec2 p) {
+    float h = 0.0;
+    float amp = 0.5;
+    float freq = 1.0;
+    
+    for (int i = 0; i < 6; i++) {
+        // Two overlapping directional wave layers per octave
+        vec2 q = p * freq;
+        float w1 = sin(q.x * 1.5 + u_time * 1.4 + noise(q + u_time * 0.4) * 2.0);
+        float w2 = cos(q.y * 1.3 - u_time * 1.1 + noise(q - u_time * 0.3) * 2.0);
+        h += amp * (1.0 - abs(w1 * w2)); // Sharpens wave crests
+        
+        p = m2 * p;
+        freq *= 1.85;
+        amp *= 0.48;
+    }
+    return h;
+}
+
+// 3D-like cloud density using layered 2D fBM
+float cloudDensity(vec3 p) {
+    vec2 uv = p.xz * 0.12 + vec2(u_time * 0.03, u_time * 0.015);
+    float f = 0.0;
+    float amp = 0.5;
+    
+    for (int i = 0; i < 5; i++) {
+        f += amp * noise(uv);
+        uv = m2 * uv * 2.05 + vec2(u_time * 0.01);
+        amp *= 0.5;
+    }
+    
+    // Shape clouds into a flat-bottomed, puffy layer between y=18 and y=32
+    float heightMask = smoothstep(16.0, 21.0, p.y) * smoothstep(34.0, 24.0, p.y);
+    return max(0.0, (f - 0.42) * heightMask * 2.8);
+}
+
+// --- SKY & LIGHTING ---
+vec3 getSky(vec3 rd, vec3 sunDir) {
+    float sunAmt = max(dot(rd, sunDir), 0.0);
+    
+    // Warm sunset gradient
+    vec3 sky = mix(vec3(0.15, 0.32, 0.55), vec3(0.04, 0.09, 0.22), clamp(rd.y * 1.8, 0.0, 1.0));
+    sky = mix(sky, vec3(0.95, 0.45, 0.22), pow(1.0 - max(rd.y, 0.0), 4.0));
+    
+    // Sun glow and crisp solar disc
+    sky += vec3(1.0, 0.6, 0.3) * pow(sunAmt, 8.0) * 0.6;
+    sky += vec3(1.0, 0.9, 0.7) * smoothstep(0.9985, 0.9995, sunAmt) * 3.0;
+    return sky;
+}
+
+// Raymarch volumetric clouds in the upper atmosphere
+vec4 renderClouds(vec3 ro, vec3 rd, vec3 sunDir) {
+    if (rd.y <= 0.01) return vec4(0.0);
+    
+    // Intersect ray with cloud slab bounds (y = 16 to y = 34)
+    float tMin = max(0.0, (16.0 - ro.y) / rd.y);
+    float tMax = min(220.0, (34.0 - ro.y) / rd.y);
+    if (tMin >= tMax) return vec4(0.0);
+    
+    int steps = 28;
+    float dt = (tMax - tMin) / float(steps);
+    float t = tMin;
+    
+    vec3 sumCol = vec3(0.0);
+    float transmittance = 1.0;
+    
+    for (int i = 0; i < 28; i++) {
+        if (transmittance < 0.02) break;
+        vec3 p = ro + rd * t;
+        float dens = cloudDensity(p);
+        
+        if (dens > 0.001) {
+            // Simple light marching toward the sun for self-shadowing
+            float shadowDens = cloudDensity(p + sunDir * 2.5);
+            float light = exp(-shadowDens * 1.8);
+            
+            // Cloud shading: bright golden rims, cool purple-blue undersides
+            vec3 cloudCol = mix(vec3(0.28, 0.30, 0.42), vec3(1.0, 0.68, 0.42), light);
+            
+            float alpha = 1.0 - exp(-dens * dt * 0.45);
+            sumCol += transmittance * alpha * cloudCol;
+            transmittance *= (1.0 - alpha);
+        }
+        t += dt;
+    }
+    
+    // Fade clouds smoothly into the horizon haze
+    float horizonFade = smoothstep(0.01, 0.18, rd.y);
+    return vec4(sumCol * horizonFade, (1.0 - transmittance) * horizonFade);
+}
+
+// --- MAIN RENDER ---
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    vec2 uv = (fragCoord * 2.0 - u_resolution.xy) / u_resolution.y;
+    
+    // Camera setup hovering just above the water
+    vec3 ro = vec3(0.0, 3.2, u_time * 2.5);
+    vec3 rd = normalize(vec3(uv.x, uv.y - 0.06, 1.5));
+    
+    // Sun position low on the horizon
+    vec3 sunDir = normalize(vec3(0.25, 0.14, 1.0));
+    
+    vec3 col = vec3(0.0);
+    
+    if (rd.y >= 0.0) {
+        // --- SKY & CLOUDS ---
+        col = getSky(rd, sunDir);
+        vec4 clouds = renderClouds(ro, rd, sunDir);
+        col = mix(col, clouds.rgb, clouds.a);
+    } else {
+        // --- OCEAN SURFACE ---
+        // Intersect ray with water plane at y = 0
+        float t = -ro.y / rd.y;
+        vec3 p = ro + rd * t;
+        
+        // Calculate surface normal via finite differences
+        // Scale epsilon with distance to prevent aliasing on the horizon
+        float eps = 0.02 + t * 0.0015;
+        float h0 = waterHeight(p.xz * 0.6);
+        float hx = waterHeight((p.xz + vec2(eps, 0.0)) * 0.6);
+        float hz = waterHeight((p.xz + vec2(0.0, eps)) * 0.6);
+        vec3 n = normalize(vec3(h0 - hx, eps * 2.2, h0 - hz));
+        
+        // Fresnel effect: water acts like a mirror at grazing angles
+        float fresnel = pow(1.0 - max(dot(-rd, n), 0.0), 4.0);
+        fresnel = clamp(0.04 + 0.96 * fresnel, 0.0, 1.0);
+        
+        // Reflect ray off waves to sample sky & clouds
+        vec3 reflDir = reflect(rd, n);
+        reflDir.y = abs(reflDir.y); // Keep reflection above horizon
+        vec3 reflCol = getSky(reflDir, sunDir);
+        vec4 reflClouds = renderClouds(p, reflDir, sunDir);
+        reflCol = mix(reflCol, reflClouds.rgb, reflClouds.a * 0.7);
+        
+        // Deep ocean water base color + slight subsurface scattering on wave peaks
+        vec3 waterBase = vec3(0.01, 0.06, 0.11);
+        vec3 sss = vec3(0.04, 0.22, 0.24) * pow(max(h0, 0.0), 2.0) * 0.5;
+        
+        // Specular sun glints sparkling across the ripples
+        vec3 halfVec = normalize(sunDir - rd);
+        float spec = pow(max(dot(n, halfVec), 0.0), 320.0) * 4.5;
+        
+        col = mix(waterBase + sss, reflCol, fresnel) + vec3(1.0, 0.75, 0.45) * spec;
+        
+        // Atmospheric distance fog blending water into the horizon
+        float fog = 1.0 - exp(-t * 0.0045);
+        col = mix(col, getSky(vec3(rd.x, 0.001, rd.z), sunDir), fog);
+    }
+    
+    // Film-like tone mapping and gamma correction
+    col = col / (1.0 + col * 0.35);
+    col = pow(col, vec3(0.85));
+    
+    fragColor = vec4(col, 1.0);
+}

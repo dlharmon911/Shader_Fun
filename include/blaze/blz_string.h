@@ -24,7 +24,7 @@ enum BLAZE_VALUE_TYPE
 	BLAZE_VALUE_TYPE_COUNT
 };
 
-typedef struct blz_string_t
+typedef struct blz_string_tag_t
 {
 	char* m_data;
 	size_t m_size;
