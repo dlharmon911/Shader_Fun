@@ -20,7 +20,7 @@ BLAZE_SHADER_VERSION_STR "\n"
 "\n"
 "out vec4 gl_FragColor;\n";
 
-const char glsl_suffix_code[] =
+static const char SF_GLSL_SUFFIX_CODE[] =
 "\n" "void main()\n"
 "{\n"
 "\tvec2 fragCoord = (gl_FragCoord.xy - u_position);\n"

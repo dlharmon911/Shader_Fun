@@ -30,12 +30,13 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
 
     (void)edit_result; // Silence unused variable warning
 
     data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
     data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+	data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
 
     return true;
 }
@@ -72,12 +73,13 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 		edit_type = BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR;
     }
 
-    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
 
     (void)edit_result; // Silence unused variable warning
 
     data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
     data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+    data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
 
     return true;
 }
@@ -196,24 +198,27 @@ static bool sf_widget_editor_process_key_escape(blz_widget_t* widget, ALLEGRO_EV
 
 static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t split_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
+	int32_t split_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
 
 	(void)split_result; // Silence unused variable warning
 
     data->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
     data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+    data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
 
     return true;
 }
 
 static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t c = BLAZE_TAB_CHAR;
-    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, data->m_editor_data.m_text, &data->m_editor_data.m_info, c);
+    const char text[2] = { BLAZE_TAB_CHAR, 0};
+
+    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE_TEXT, data->m_editor_data.m_text, &data->m_editor_data.m_info, (const void*)text);
 
     if (result == 0)
     {
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+        data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
     }
 
     return true;
@@ -264,11 +269,20 @@ static bool sf_widget_editor_process_key_pgdn(blz_widget_t* widget, ALLEGRO_EVEN
 static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
     int32_t c = event.keyboard.unichar;
-	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_INSERT_CHAR, data->m_editor_data.m_text, &data->m_editor_data.m_info, c);
+
+    if (c < 0x20 || c >= 0x7f)
+    {
+        return false;
+    }
+
+	const char text[2] = {(char)c, 0};
+
+	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE_TEXT, data->m_editor_data.m_text, &data->m_editor_data.m_info, (const void*)text);
 
     if (result == 0)
     {
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+        data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
 	}
 
     return true;
@@ -280,7 +294,11 @@ static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEG
 
     (void)cut; // Silence unused variable warning
 
-    data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+	if (cut == 0)
+	{
+		data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+		data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
+	}
 
     return false;
 }
@@ -296,11 +314,21 @@ static bool sf_widget_editor_process_control_key_copy(blz_widget_t* widget, ALLE
 
 static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t pasted = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE_CLIPBOARD, data->m_editor_data.m_text, &data->m_editor_data.m_info, 0);
+	char* clipboard_text = al_get_clipboard_text(al_get_current_display());
+	if (!clipboard_text)
+	{
+		return false;
+	}
+
+	int32_t pasted = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE_TEXT, data->m_editor_data.m_text, &data->m_editor_data.m_info, clipboard_text);
 
 	(void)pasted; // Silence unused variable warning
 
-	data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+    if (pasted == 0)
+    {
+        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+        data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
+    }
 
     return false;
 }
@@ -355,6 +383,7 @@ static const sf_widget_editor_process_key_func_t sf_widget_editor_process_contro
 bool sf_widget_editor_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)
 {
 	bool result = false;
+    sf_dialog_data_t* dialog_data = (sf_dialog_data_t*)data;
 
     if (!widget || !event || !data)
     {
@@ -374,11 +403,20 @@ bool sf_widget_editor_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event,
 
     ((sf_dialog_data_t*)data)->m_editor_data.m_info.m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
 
+    if (dialog_data->m_flags & SF_TEXT_FLAG_TITLE_NEEDS_CHANGED)
+    {
+        sf_dialog_data_set_window_title(dialog_data);
+        dialog_data->m_flags &= ~SF_TEXT_FLAG_TITLE_NEEDS_CHANGED;
+    }
+
     return result;
 }
 
 bool sf_widget_editor_control_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)
 {
+	bool result = false;
+    sf_dialog_data_t* dialog_data = (sf_dialog_data_t*)data;
+
     if (!widget || !event || !data)
     {
         return false;
@@ -388,8 +426,14 @@ bool sf_widget_editor_control_key_func(blz_widget_t* widget, const ALLEGRO_EVENT
 
     if (func)
     {
-        return func(widget, *event, (sf_dialog_data_t*)data);
+        result = func(widget, *event, dialog_data);
     }
 
-    return false;
+    if (dialog_data->m_flags & SF_TEXT_FLAG_TITLE_NEEDS_CHANGED)
+    {
+        sf_dialog_data_set_window_title(dialog_data);
+        dialog_data->m_flags &= ~SF_TEXT_FLAG_TITLE_NEEDS_CHANGED;
+    }
+
+    return result;
 }

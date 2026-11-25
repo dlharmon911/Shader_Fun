@@ -1,10 +1,12 @@
 #include <stdint.h>
 
-typedef struct blz_color_entry_tag_t
+typedef struct blz_color_entry_tag_t blz_color_entry_t;
+
+struct blz_color_entry_tag_t
 {
 	const char* m_name;
 	uint32_t m_rgba;
-} blz_color_entry_t;
+};
 
 static const blz_color_entry_t _blz_color_list[BLAZE_COLOR_COUNT] =
 {

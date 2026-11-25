@@ -20,25 +20,29 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     float x = 0.0;
     float y = 0.0;
 
-    for (float i = 0.0; i < NSHAPES; i++) {
+    for (float i = 0.0; i < NSHAPES; i++) 
+	{
         float shape_t = R * i + t;
         
-        for (float j = 0.0; j < NPOINTS; j++) {
+        for (float j = 0.0; j < NPOINTS; j++)
+		{
             float ang_y = i + y;
             float ang_x = shape_t + x;
-            
+
             x = sin(ang_y) + sin(ang_x);
             y = cos(ang_y) + cos(ang_x);
-            
+
             // Check distance from pixel to current point (x, y)
             float dist = distance(uv, vec2(x, y));
-            
+
             // Draw a soft "glow" point
-            if (dist < 0.03) {
+            if (dist < 0.03)
+			{
                 vec3 pntCol = hsb2rgb(vec3(i / NSHAPES, 0.8, 0.9));
                 finalCol += pntCol * (0.002 / dist); // Additive blending
             }
         }
     }
+
     fragColor = vec4(finalCol, 1.0);
 }

@@ -4,10 +4,12 @@
 #include "blaze.h"
 #include "sf_uniform.h"
 
-typedef struct sf_widget_shader_data_tag_t
+typedef struct sf_widget_shader_data_tag_t sf_widget_shader_data_t;
+
+struct sf_widget_shader_data_tag_t
 {
 	ALLEGRO_SHADER* m_shader;
-} sf_widget_shader_data_t;
+};
 
 int32_t sf_widget_shader_build(const blz_text_t* text, const sf_uniform_t* uniforms, sf_widget_shader_data_t* data);
 int32_t sf_widget_shader_rebuild(const blz_text_t* text, const sf_uniform_t* uniforms, sf_widget_shader_data_t* data);

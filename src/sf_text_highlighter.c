@@ -1,14 +1,14 @@
 #include "blaze.h"
 #include "sf_text_highlighter.h"
 
-enum glsl_token_type
+enum SF_TOKEN_TYPE
 {
-	GLSL_TOKEN_TYPE_IDENTIFIER,
-	GLSL_TOKEN_TYPE_NUMBER,
-	GLSL_TOKEN_TYPE_OPERATOR,
-	GLSL_TOKEN_TYPE_COMMENT,
-	GLSL_TOKEN_TYPE_PREPROCESSOR,
-	GLSL_TOKEN_TYPE_OTHER
+	SF_TOKEN_TYPE_IDENTIFIER,
+	SF_TOKEN_TYPE_NUMBER,
+	SF_TOKEN_TYPE_OPERATOR,
+	SF_TOKEN_TYPE_COMMENT,
+	SF_TOKEN_TYPE_PREPROCESSOR,
+	SF_TOKEN_TYPE_OTHER
 };
 
 enum SF_TEXT_COLOR
@@ -24,7 +24,14 @@ enum SF_TEXT_COLOR
 	SF_TEXT_COLOR_COUNT
 };
 
-static const ALLEGRO_COLOR _SF_TEXT_COLORS_LIGHT_MODE[SF_TEXT_COLOR_COUNT] =
+enum
+{
+	BLAZE_TEXT_KEYWORD_COUNT = 78,
+	BLAZE_TEXT_FUNCTION_NAME_COUNT = 28,
+	BLAZE_TEXT_OPERATOR_COUNT = 51
+};
+
+static const ALLEGRO_COLOR SF_TEXT_COLORS_LIGHT_MODE[SF_TEXT_COLOR_COUNT] =
 {
 	{ 0.0f, 0.0f, 1.0f, 1.0f },		// SF_TEXT_COLOR_KEYWORD
 	{ 0.6f, 0.0f, 1.0f, 1.0f },		// SF_TEXT_COLOR_FUNCTION
@@ -36,7 +43,7 @@ static const ALLEGRO_COLOR _SF_TEXT_COLORS_LIGHT_MODE[SF_TEXT_COLOR_COUNT] =
 	{ 0.0f, 0.0f, 0.0f, 1.0f }		// SF_TEXT_COLOR_DEFAULT
 };
 
-static const ALLEGRO_COLOR _SF_TEXT_COLORS_DARK_MODE[SF_TEXT_COLOR_COUNT] =
+static const ALLEGRO_COLOR SF_TEXT_COLORS_DARK_MODE[SF_TEXT_COLOR_COUNT] =
 {
 	{ 0.5f, 0.5f, 1.0f, 1.0f },		// SF_TEXT_COLOR_KEYWORD
 	{ 0.8f, 0.6f, 1.0f, 1.0f },		// SF_TEXT_COLOR_FUNCTION
@@ -48,16 +55,9 @@ static const ALLEGRO_COLOR _SF_TEXT_COLORS_DARK_MODE[SF_TEXT_COLOR_COUNT] =
 	{ 1.0f, 1.0f, 1.0f, 1.0f }		// SF_TEXT_COLOR_DEFAULT
 };
 
-static const ALLEGRO_COLOR* _SF_TEXT_COLORS = _SF_TEXT_COLORS_LIGHT_MODE;
+static const ALLEGRO_COLOR* SF_TEXT_COLORS = SF_TEXT_COLORS_LIGHT_MODE;
 
-enum
-{
-	BLAZE_TEXT_KEYWORD_COUNT = 78,
-	BLAZE_TEXT_FUNCTION_NAME_COUNT = 28,
-	BLAZE_TEXT_OPERATOR_COUNT = 51
-};
-
-const blz_stringview_t glsl_keywords[BLAZE_TEXT_KEYWORD_COUNT] =
+static const blz_stringview_t SF_GLSL_KEYWORD_NAME[BLAZE_TEXT_KEYWORD_COUNT] =
 {
 	{ 9, "attribute" }, { 4, "bool" }, { 5, "break" }, { 6, "buffer" }, { 5, "bvec2" },
 	{ 5, "bvec3" }, { 5, "bvec4" }, { 4, "case" }, { 8, "centroid" }, { 8, "coherent" },
@@ -77,7 +77,7 @@ const blz_stringview_t glsl_keywords[BLAZE_TEXT_KEYWORD_COUNT] =
 	{ 8, "volatile" }, { 5, "while" }, { 10, "writeonly" }
 };
 
-const blz_stringview_t glsl_function_name[BLAZE_TEXT_FUNCTION_NAME_COUNT] =
+static const blz_stringview_t SF_GLSL_FUNCTION_NAME[BLAZE_TEXT_FUNCTION_NAME_COUNT] =
 {
 	{ 3, "abs" }, { 4, "acos" }, { 4, "asin" }, { 4, "atan" }, { 4, "ceil" },
 	{ 5, "clamp" }, { 3, "cos" }, { 7, "degrees" }, { 3, "exp" }, { 4, "exp2" },
@@ -87,7 +87,7 @@ const blz_stringview_t glsl_function_name[BLAZE_TEXT_FUNCTION_NAME_COUNT] =
 	{ 4, "step" }, { 3, "tan" }
 };
 
-const blz_stringview_t glsl_operator[BLAZE_TEXT_OPERATOR_COUNT] =
+static const blz_stringview_t SF_GLSL_OPERATOR_NAME[BLAZE_TEXT_OPERATOR_COUNT] =
 {
 	// 3-character operators
 	{ 3, "<<=" },{ 3, ">>=" },
@@ -108,12 +108,19 @@ const blz_stringview_t glsl_operator[BLAZE_TEXT_OPERATOR_COUNT] =
 	{ 1, ";" }, { 1, ":" }, { 1, "~" }
 };
 
-typedef struct blz_text_token_tag_t
+typedef struct blz_text_token_tag_t blz_text_token_t;
+typedef struct sf_text_highlighter_data_tag_t sf_text_highlighter_data_t;
+
+struct blz_text_token_tag_t
 {
 	blz_stringview_t m_value;
 	int32_t m_type;
-} blz_text_token_t;
+};
 
+struct sf_text_highlighter_data_tag_t
+{
+	bool m_multiline_comment;
+};
 
 static bool _blz_text_is_stringview_array(blz_stringview_t text, const blz_stringview_t* data, size_t count)
 {
@@ -135,7 +142,7 @@ static bool _blz_text_is_stringview_array(blz_stringview_t text, const blz_strin
 
 static blz_stringview_t _blz_text_parse_identifier(blz_stringview_t line, blz_text_token_t* token)
 {
-	token->m_type = GLSL_TOKEN_TYPE_IDENTIFIER;
+	token->m_type = SF_TOKEN_TYPE_IDENTIFIER;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 0;
 
@@ -160,7 +167,7 @@ static blz_stringview_t _blz_text_parse_identifier(blz_stringview_t line, blz_te
 
 static blz_stringview_t _blz_text_parse_number(blz_stringview_t line, blz_text_token_t* token)
 {
-	token->m_type = GLSL_TOKEN_TYPE_NUMBER;
+	token->m_type = SF_TOKEN_TYPE_NUMBER;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 0;
 
@@ -181,13 +188,13 @@ static blz_stringview_t _blz_text_parse_number(blz_stringview_t line, blz_text_t
 
 static blz_stringview_t _blz_text_parse_operator(blz_stringview_t line, blz_text_token_t* token)
 {
-	token->m_type = GLSL_TOKEN_TYPE_OPERATOR;
+	token->m_type = SF_TOKEN_TYPE_OPERATOR;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 0;
 
 	for (int32_t i = 0; i < BLAZE_TEXT_OPERATOR_COUNT; ++i)
 	{
-		blz_stringview_t op = glsl_operator[i];
+		blz_stringview_t op = SF_GLSL_OPERATOR_NAME[i];
 
 		if (line.m_length < op.m_length)
 		{
@@ -210,7 +217,7 @@ static blz_stringview_t _blz_text_parse_operator(blz_stringview_t line, blz_text
 
 static blz_stringview_t _blz_text_parse_comment(blz_stringview_t line, blz_text_token_t* token, bool* multiline_comment)
 {
-	token->m_type = GLSL_TOKEN_TYPE_COMMENT;
+	token->m_type = SF_TOKEN_TYPE_COMMENT;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 0;
 
@@ -239,7 +246,7 @@ static blz_stringview_t _blz_text_parse_comment(blz_stringview_t line, blz_text_
 
 static blz_stringview_t _blz_text_parse_preprocessor(blz_stringview_t line, blz_text_token_t* token)
 {
-	token->m_type = GLSL_TOKEN_TYPE_PREPROCESSOR;
+	token->m_type = SF_TOKEN_TYPE_PREPROCESSOR;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 0;
 	while (line.m_length)
@@ -303,7 +310,7 @@ static blz_stringview_t _blz_text_get_token(blz_stringview_t line, blz_text_toke
 		return _blz_text_parse_operator(line, token);
 	}
 
-	token->m_type = GLSL_TOKEN_TYPE_OTHER;
+	token->m_type = SF_TOKEN_TYPE_OTHER;
 	token->m_value.m_data = line.m_data;
 	token->m_value.m_length = 1;
 
@@ -325,17 +332,11 @@ static void _blz_text_parse_multiline_comment(const blz_font_t* font, blz_string
 		}
 	}
 
-	blz_text_draw_line_tab_delimited(font, *line, position, offset, _SF_TEXT_COLORS[SF_TEXT_COLOR_COMMENT]);
+	blz_text_draw_line_tab_delimited(font, *line, position, offset, SF_TEXT_COLORS[SF_TEXT_COLOR_COMMENT]);
 
 	line->m_data += line_length;
 	line->m_length -= line_length;
 }
-
-
-typedef struct sf_text_highlighter_data_tag_t
-{
-	bool m_multiline_comment;
-} sf_text_highlighter_data_t;
 
 static void sf_text_highlighter_begin(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* data)
 {
@@ -379,13 +380,13 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 		switch (token.m_type)
 		{
-		case GLSL_TOKEN_TYPE_IDENTIFIER:
+		case SF_TOKEN_TYPE_IDENTIFIER:
 		{
-			if (_blz_text_is_stringview_array(token.m_value, glsl_keywords, BLAZE_TEXT_KEYWORD_COUNT))
+			if (_blz_text_is_stringview_array(token.m_value, SF_GLSL_KEYWORD_NAME, BLAZE_TEXT_KEYWORD_COUNT))
 			{
 				color = SF_TEXT_COLOR_KEYWORD;
 			}
-			else if (_blz_text_is_stringview_array(token.m_value, glsl_function_name, BLAZE_TEXT_FUNCTION_NAME_COUNT))
+			else if (_blz_text_is_stringview_array(token.m_value, SF_GLSL_FUNCTION_NAME, BLAZE_TEXT_FUNCTION_NAME_COUNT))
 			{
 				color = SF_TEXT_COLOR_FUNCTION;
 			}
@@ -394,19 +395,19 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 				color = SF_TEXT_COLOR_UNKNOWN_IDENTIFIER;
 			}
 		} break;
-		case GLSL_TOKEN_TYPE_NUMBER:
+		case SF_TOKEN_TYPE_NUMBER:
 		{
 			color = SF_TEXT_COLOR_NUMBER;
 		} break;
-		case GLSL_TOKEN_TYPE_COMMENT:
+		case SF_TOKEN_TYPE_COMMENT:
 		{
 			color = SF_TEXT_COLOR_COMMENT;
 		} break;
-		case GLSL_TOKEN_TYPE_OPERATOR:
+		case SF_TOKEN_TYPE_OPERATOR:
 		{
 			color = SF_TEXT_COLOR_OPERATOR;
 		} break;
-		case GLSL_TOKEN_TYPE_PREPROCESSOR:
+		case SF_TOKEN_TYPE_PREPROCESSOR:
 		{
 			color = SF_TEXT_COLOR_PREPROCESSOR;
 		} break;
@@ -415,7 +416,7 @@ static void sf_text_highlighter_per_line(const blz_font_t* font, blz_stringview_
 
 		if (token.m_value.m_length)
 		{
-			blz_text_draw_line_tab_delimited(font, token.m_value, position, &offset, _SF_TEXT_COLORS[color]);
+			blz_text_draw_line_tab_delimited(font, token.m_value, position, &offset, SF_TEXT_COLORS[color]);
 		}
 	}
 }

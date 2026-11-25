@@ -39,7 +39,9 @@ enum BLAZE_FRAME_THEME_COLOR
 	BLAZE_FRAME_THEME_COLOR_COUNT
 };
 
-typedef struct blz_frame_theme_tag_t
+typedef struct blz_frame_theme_tag_t blz_frame_theme_t;
+
+struct blz_frame_theme_tag_t
 {
 	uint32_t m_background;
 	uint32_t m_foreground;
@@ -49,7 +51,7 @@ typedef struct blz_frame_theme_tag_t
 	uint32_t m_border_dark;
 	uint32_t m_text;
 	uint32_t m_text_shadow;
-} blz_frame_theme_t;
+};
 
 void blz_frame_change_theme(const blz_frame_theme_t* theme);
 const blz_frame_theme_t* blz_frame_get_default_theme(void);

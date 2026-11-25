@@ -11,15 +11,6 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     {
         return -1;
     }
-
-	const char* bubble_code = sf_get_shader_snippet(SF_SHADER_SNIPPET_ID_BUBBLE);
-
-    data->m_editor_data.m_text = blz_text_create(bubble_code);
-    
-    if (!data->m_editor_data.m_text)
-    {
-        return -1;
-    }   
     
     data->m_editor_data.m_info.m_cursor.m_line = 0;
     data->m_editor_data.m_info.m_cursor.m_offset = 0;
@@ -30,7 +21,6 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     data->m_editor_data.m_info.m_color = al_map_rgb(0, 0, 0);
     data->m_editor_data.m_info.m_selection = (blz_text_selection_t){ { 0, 0}, { 0, 0 }, BLAZE_TEXT_SELECTION_TYPE_NONE };
 	data->m_editor_data.m_info.m_highlighter = sf_text_highlighter_get();
-    
 
     return 0;
 }
@@ -126,7 +116,8 @@ static bool sf_widget_editor_on_event(blz_widget_t* widget, ALLEGRO_EVENT event,
                     event.keyboard.keycode <= ALLEGRO_KEY_Z &&
                     sf_widget_editor_control_key_func(widget, &event, data))
                 {
-                    sf_widget_editor_scroll_to_cursor(widget, data);
+                    sf_widget_editor_scroll_to_cursor(widget, data);                    
+
                     return true;
                 }
             }

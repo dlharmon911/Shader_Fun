@@ -14,26 +14,30 @@ enum BLAZE_INPUT_BUTTON_FLAGS
 	BLAZE_INPUT_BUTTON_CHANGED = 2
 };
 
-typedef struct blz_input_keyboard_tag_t
+typedef struct blz_input_keyboard_tag_t blz_input_keyboard_t;
+typedef struct blz_input_mouse_tag_t blz_input_mouse_t;
+typedef struct blz_input_tag_t blz_input_t;
+
+struct blz_input_keyboard_tag_t
 {
 	ALLEGRO_USTR* m_buffer;
 	int32_t m_button[BLAZE_INPUT_KEY_COUNT];
 	int32_t m_state;
-} blz_input_keyboard_t;
+};
 
-typedef struct blz_input_mouse_tag_t
+struct blz_input_mouse_tag_t
 {
 	int32_t m_button[BLAZE_INPUT_MOUSE_BUTTON_COUNT];
 	int32_t m_state;
 	blz_vec4f_t m_position;
 	blz_vec4f_t m_delta;
-} blz_input_mouse_t;
+};
 
-typedef struct blz_input_tag_t
+struct blz_input_tag_t
 {
 	blz_input_keyboard_t m_keyboard;
 	blz_input_mouse_t m_mouse;
-} blz_input_t;
+};
 
 void blz_input_keyboard_flush_buffer(blz_input_t* input);
 void blz_input_keyboard_reset_state(blz_input_t* input);

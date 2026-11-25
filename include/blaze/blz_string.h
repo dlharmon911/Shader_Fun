@@ -24,11 +24,13 @@ enum BLAZE_VALUE_TYPE
 	BLAZE_VALUE_TYPE_COUNT
 };
 
-typedef struct blz_string_tag_t
+typedef struct blz_string_tag_t blz_string_t;
+
+struct blz_string_tag_t
 {
 	char* m_data;
 	size_t m_size;
-} blz_string_t;
+};
 
 bool blz_string_is_valid(blz_string_t string);
 bool blz_string_is_empty(blz_string_t string);

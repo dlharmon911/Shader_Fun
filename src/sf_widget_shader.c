@@ -67,19 +67,19 @@ static void sf_widget_shader_render(const blz_widget_t* widget, const sf_dialog_
 		return;
 	}
 
+	blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width, widget->m_size.m_height, BLAZE_FRAME_TYPE_NONE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
+
 	if (data->m_shader_data.m_shader)
 	{
 		sf_shader_render(data->m_shader_data.m_shader, data->m_uniform_data.m_uniforms, widget->m_position, widget->m_size);
-		blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width, widget->m_size.m_height, BLAZE_FRAME_TYPE_NONE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
 	}
 	else
 	{
 		float line_padding = 10.0f;
 		float line_thickness = 6.0f;
 
-		al_draw_filled_rectangle(widget->m_position.m_x, widget->m_position.m_y, widget->m_position.m_x + widget->m_size.m_width, widget->m_position.m_y + widget->m_size.m_height, (ALLEGRO_COLOR) { 0.8f, 0.0f, 0.0f, 1.0f });
-		al_draw_line(widget->m_position.m_x + line_padding, widget->m_position.m_y + line_padding, widget->m_position.m_x + widget->m_size.m_width - line_padding, widget->m_position.m_y + widget->m_size.m_height - line_padding, (ALLEGRO_COLOR) { 0.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
-		al_draw_line(widget->m_position.m_x + line_padding, widget->m_position.m_y + widget->m_size.m_height - line_padding, widget->m_position.m_x + widget->m_size.m_width - line_padding, widget->m_position.m_y + line_padding, (ALLEGRO_COLOR) { 0.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
+		al_draw_line(widget->m_position.m_x + line_padding, widget->m_position.m_y + line_padding, widget->m_position.m_x + widget->m_size.m_width - line_padding, widget->m_position.m_y + widget->m_size.m_height - line_padding, (ALLEGRO_COLOR) { 1.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
+		al_draw_line(widget->m_position.m_x + line_padding, widget->m_position.m_y + widget->m_size.m_height - line_padding, widget->m_position.m_x + widget->m_size.m_width - line_padding, widget->m_position.m_y + line_padding, (ALLEGRO_COLOR) { 1.0f, 0.0f, 0.0f, 1.0f }, line_thickness);
 	}
 }
 

@@ -377,6 +377,7 @@ const char* sf_get_shader_snippet(int32_t id)
     case SF_SHADER_SNIPPET_ID_PLASMA: return plasma_code;
     case SF_SHADER_SNIPPET_ID_MANDELBROT: return mandelbrot_code;
     case SF_SHADER_SNIPPET_ID_PERLIN_NOISE: return perlin_noise_code;
+	case SF_SHADER_SNIPPET_ID_FRACTAL: return fractal_code;
     default: return NULL;
     }
 

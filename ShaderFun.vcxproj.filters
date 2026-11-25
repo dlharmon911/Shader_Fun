@@ -129,6 +129,9 @@
     <ClInclude Include="include\sf_shader_text.h">
       <Filter>Header Files\ShaderFun Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files\ShaderFun Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sf_dialog_main.c">
@@ -212,5 +215,10 @@
     <ClCompile Include="src\blaze\blz_string.c">
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

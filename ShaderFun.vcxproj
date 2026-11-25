@@ -183,6 +183,7 @@
     <ClInclude Include="include\sf_widget_editor.h" />
     <ClInclude Include="include\sf_widget_shader.h" />
     <ClInclude Include="include\sf_widget_uniforms.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\blaze\blz_byte.c" />
@@ -212,6 +213,9 @@
     <ClCompile Include="src\sf_widget_editor_mouse_func.c" />
     <ClCompile Include="src\sf_widget_shader.c" />
     <ClCompile Include="src\sf_widget_uniforms.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

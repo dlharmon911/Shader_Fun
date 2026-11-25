@@ -26,7 +26,15 @@ enum SF_TEXT_FLAGS
 {
 	SF_TEXT_FLAG_CLEAN = 0,
 	SF_TEXT_FLAG_ERROR = 1 << 0,
-	SF_TEXT_FLAG_NEEDS_REBUILD = 1 << 1
+	SF_TEXT_FLAG_MODIFIED = 1 << 1,
+	SF_TEXT_FLAG_TITLE_NEEDS_CHANGED = 1 << 2,
+	SF_TEXT_FLAG_NEEDS_REBUILD = 1 << 3
+};
+
+enum SF_DIALOG_FLAGS
+{
+	SF_DIALOG_FLAG_NONE = 0,
+	SF_DIALOG_FLAG_FULLSCREEN = 1 << 0,
 };
 
 enum SF_DIALOG_MAIN_CHILD_ID
@@ -37,20 +45,25 @@ enum SF_DIALOG_MAIN_CHILD_ID
 	SF_DIALOG_MAIN_CHILD_ID_CONSOLE
 };
 
-typedef struct sf_dialog_data_tag_t
+typedef struct sf_dialog_data_tag_t sf_dialog_data_t;
+
+struct sf_dialog_data_tag_t
 {
 	sf_widget_editor_data_t m_editor_data;
 	sf_widget_console_data_t m_console_data;
 	sf_widget_shader_data_t m_shader_data;
 	sf_widget_uniform_data_t m_uniform_data;
 	blz_widget_t* m_focus_widget;
+	ALLEGRO_USTR* m_filename;
 	blz_font_cache_t m_fonts;
 	float m_time_start;
 	float m_time_current;
 	int32_t m_code;
 	int32_t m_text_flags;
-	bool m_fullscreen;
-} sf_dialog_data_t;
+	int32_t m_flags;
+};
+
+void sf_dialog_data_set_window_title(sf_dialog_data_t* data);
 
 #endif // !_GUARD_SHADER_FUN_DIALOG_DATA_H_
 

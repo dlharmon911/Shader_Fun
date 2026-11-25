@@ -61,7 +61,7 @@ static void sf_widget_uniforms_render(const blz_widget_t* widget, const sf_dialo
 	float padding = 4.0f;
 	float glyph_height = (float)al_get_font_line_height(font) + padding;
 	char text[256];
-	blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width - 1.0f, widget->m_size.m_height - 1.0f, BLAZE_FRAME_TYPE_WORKSPACE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
+	blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width - 1.0f, widget->m_size.m_height - 1.0f, BLAZE_FRAME_TYPE_WORKSPACE, BLAZE_FRAME_BORDER_LINE_NORMAL);
 	float y_offset = widget->m_position.m_y + padding;
 
 	size_t uniform_count = sf_uniform_size(data->m_uniform_data.m_uniforms);
@@ -76,8 +76,6 @@ static void sf_widget_uniforms_render(const blz_widget_t* widget, const sf_dialo
 		const sf_uniform_t* uniform = &data->m_uniform_data.m_uniforms[i];
 
 		const char* name = uniform->m_name;
-		int32_t type = uniform->m_type;
-		const char* type_str = SF_UNIFORM_NAME_STRS[type];
 
 		sf_uniform_to_string(uniform, text, sizeof(text));
 		al_draw_textf(font, al_map_rgb(0, 0, 0), widget->m_position.m_x + padding, y_offset, 0, "%s", text);

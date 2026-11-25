@@ -35,13 +35,16 @@ static const char* SF_UNIFORM_NAME_STRS[SF_UNIFORM_TYPE_COUNT] =
 	"sampler2D"
 };
 
-typedef struct sf_uniform_sampler2d_tag_t
+typedef struct sf_uniform_sampler2d_tag_t sf_uniform_sampler2d_t;
+typedef struct sf_uniform_tag_t sf_uniform_t;
+
+struct sf_uniform_sampler2d_tag_t
 {
 	ALLEGRO_BITMAP* m_texture;
 	int32_t m_unit;
-} sf_uniform_sampler2d_t;
+};
 
-typedef struct sf_uniform_tag_t
+struct sf_uniform_tag_t
 {
 	char* m_name;
 	int32_t m_type;
@@ -56,10 +59,9 @@ typedef struct sf_uniform_tag_t
 		sf_uniform_sampler2d_t m_sampler2d;
 	} m_value;
 	bool m_visible;
-} sf_uniform_t;
+};
 
 void sf_uniform_to_string(const sf_uniform_t* uniform, char* buffer, size_t buffer_size);
-
 void sf_uniform_clear(sf_uniform_t* uniform);
 size_t sf_uniform_size(const sf_uniform_t* uniform);
 bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, const void* value, size_t value_size, bool visible);

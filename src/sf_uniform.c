@@ -70,7 +70,7 @@ void sf_uniform_to_string(const sf_uniform_t* uniform, char* buffer, size_t buff
 
 	char value_buffer[128] = { 0 };
 	_sf_uniform_value_to_string(uniform, value_buffer, sizeof(value_buffer));
-	snprintf(buffer, buffer_size, "%s: %s %s", uniform->m_name, SF_UNIFORM_NAME_STRS[uniform->m_type], value_buffer);
+	snprintf(buffer, buffer_size, "%s <%s>: %s", uniform->m_name, SF_UNIFORM_NAME_STRS[uniform->m_type], value_buffer);
 }
 
 void sf_uniform_clear(sf_uniform_t* uniform)

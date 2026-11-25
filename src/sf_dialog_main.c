@@ -171,6 +171,33 @@ static void sf_dialog_main_stop(blz_dialog_t* dialog, sf_dialog_data_t* data)
 	}
 }
 
+int32_t sf_dialog_child_mouse_inside(const blz_dialog_t* dialog, float x, float y)
+{
+	if (dialog->m_children)
+	{
+		size_t count = blz_darray_size(dialog->m_children);
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			blz_dialog_child_t* child_node = blz_darray_at(dialog->m_children, i);
+
+			if (child_node && child_node->m_widget)
+			{
+				const blz_vec2f_t* pos = &child_node->m_widget->m_position;
+				const blz_sizef_t* size = &child_node->m_widget->m_size;
+				if (x >= pos->m_x && x <= pos->m_x + size->m_width &&
+					y >= pos->m_y && y <= pos->m_y + size->m_height)
+				{
+					return (int32_t)i;
+				}
+			}
+
+		}
+	}
+
+	return -1;
+}
+
 static void sf_dialog_main_update(blz_dialog_t* dialog, sf_dialog_data_t* data)
 {
 	if (!dialog)
@@ -239,7 +266,7 @@ static void sf_dialog_main_render(const blz_dialog_t* dialog, const sf_dialog_da
 		return;
 	}
 
-	if (data->m_fullscreen)
+	if (data->m_flags & SF_DIALOG_FLAG_FULLSCREEN)
 	{
 		if (data->m_shader_data.m_shader)
 		{
@@ -329,5 +356,17 @@ const blz_dialog_vtable_t* sf_dialog_main_get_vtable(void)
 	};
 
 	return &sf_dialog_main_vtable;
+}
+
+void sf_dialog_data_set_window_title(sf_dialog_data_t* data)
+{
+	const char title_format[] = "Shader Fun - %s%c";
+	char title[256];
+	const char* filename = al_cstr(data->m_filename);
+	char c = (data->m_flags & SF_TEXT_FLAG_MODIFIED) ? '*' : '\0';
+
+	snprintf(title, sizeof(title), title_format, filename, c);
+
+	al_set_window_title(al_get_current_display(), title);
 }
 

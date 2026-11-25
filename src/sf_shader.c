@@ -142,7 +142,7 @@ static int32_t sf_shader_generate_text(ALLEGRO_USTR* text, blz_stringview_t view
 		}
 	}
 
-	if (!al_ustr_append_cstr(text, glsl_suffix_code))
+	if (!al_ustr_append_cstr(text, SF_GLSL_SUFFIX_CODE))
 	{
 		return -1;
 	}
