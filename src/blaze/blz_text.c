@@ -9,16 +9,14 @@ static const ALLEGRO_COLOR BLAZE_TEXT_COLOR_SELECTED = { 0.75f, 0.85f, 1.0f, 1.0
 typedef int32_t(*blz_text_edit_func_t)(blz_text_t* text, blz_text_info_t* info, const void* data);
 
 int32_t _blz_text_edit_excise_selection(blz_text_t* text, blz_text_info_t* info, const void* data);
-int32_t _blz_text_edit_excise_char(blz_text_t* text, blz_text_info_t* info, const void* data);
 int32_t _blz_text_edit_paste_text(blz_text_t* text, blz_text_info_t* info, const void* data);
 int32_t _blz_text_edit_split(blz_text_t* text, blz_text_info_t* info, const void* data);
 int32_t _blz_text_edit_merge(blz_text_t* text, blz_text_info_t* info, const void* data);
 
 static blz_text_edit_func_t _blz_text_edit_funcs[] =
 {
-	[BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION] = (blz_text_edit_func_t)_blz_text_edit_excise_selection,
-	[BLAZE_TEXT_EDIT_OPTION_EXCISE_CHAR] = (blz_text_edit_func_t)_blz_text_edit_excise_char,
-	[BLAZE_TEXT_EDIT_OPTION_PASTE_TEXT] = (blz_text_edit_func_t)_blz_text_edit_paste_text,
+	[BLAZE_TEXT_EDIT_OPTION_EXCISE] = (blz_text_edit_func_t)_blz_text_edit_excise_selection,
+	[BLAZE_TEXT_EDIT_OPTION_PASTE] = (blz_text_edit_func_t)_blz_text_edit_paste_text,
 	[BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE] = (blz_text_edit_func_t)_blz_text_edit_split,
 	[BLAZE_TEXT_EDIT_OPTION_MERGE_LINE] = (blz_text_edit_func_t)_blz_text_edit_merge,
 };
@@ -33,13 +31,19 @@ static blz_stringview_t _blz_text_get_line(blz_stringview_t line, blz_stringview
 		char c = line.m_data[0];
 		line.m_data++;
 		line.m_length--;
-	
+
 		if (c == BLAZE_NEWLINE_CHAR)
 		{
 			break;
 		}
 		
 		next->m_length++;
+	}
+
+	char c = next->m_data[next->m_length - 1];
+	if (c == BLAZE_CARRIAGE_RETURN_CHAR)
+	{
+		--next->m_length;
 	}
 
 	return line;
@@ -855,6 +859,8 @@ static int32_t _blz_text_edit_excise_selection(blz_text_t* text, blz_text_info_t
 		}
 	}
 
+	info->m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+
 	return 0;
 }
 
@@ -890,12 +896,14 @@ int32_t blz_text_cut_to_clipboard(blz_text_t* text, blz_text_info_t* info)
 		return -1;
 	}
 
-	int32_t edit_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_EXCISE_SELECTION, text, info, 0);
+	int32_t edit_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_EXCISE, text, info, 0);
 
 	if (edit_result != 0)
 	{
 		return -1;
 	}
+
+	info->m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
 
 	return 0;
 }
@@ -1224,7 +1232,14 @@ static int32_t _blz_text_edit_paste_text(blz_text_t* text, blz_text_info_t* info
 		}
 	}
 
-	return _blz_text_paste_cursor(text, info, clipboard_blz_text);
+	int32_t paste_result = _blz_text_paste_cursor(text, info, clipboard_blz_text);
+
+	if (0 == paste_result)
+	{
+		info->m_selection.m_type = BLAZE_TEXT_SELECTION_TYPE_NONE;
+	}
+
+	return paste_result;
 }
 
 int32_t blz_text_select_all(const blz_text_t* text, blz_text_info_t* info)

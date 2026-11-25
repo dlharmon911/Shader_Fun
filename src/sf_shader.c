@@ -92,6 +92,11 @@ static int32_t sf_shader_process_line(ALLEGRO_USTR* text, blz_stringview_t line)
 				c = BLAZE_NEWLINE_CHAR;
 				++i;
 			}
+			else if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_CARRIAGE_RETURN)
+			{
+				c = BLAZE_CARRIAGE_RETURN_CHAR;
+				++i;
+			}
 			else
 			{
 				return -1;
@@ -102,7 +107,6 @@ static int32_t sf_shader_process_line(ALLEGRO_USTR* text, blz_stringview_t line)
 		{
 			return -1;
 		}
-		
 	}
 
 	return 0;
