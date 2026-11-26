@@ -133,6 +133,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files\ShaderFun Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\blaze\blz_malloc.h">
+      <Filter>Header Files\Blaze Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sf_dialog_main.c">
@@ -214,6 +217,12 @@
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
     <ClCompile Include="src\blaze\blz_string.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blaze\blz_text_undo.c">
+      <Filter>Source Files\Blaze Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\blaze\blz_malloc.c">
       <Filter>Source Files\Blaze Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,12 +5,12 @@
 
 size_t blz_darray_capacity(const void* array);
 size_t blz_darray_size(const void* array);
-void* blz_darray_create(size_t element_size, size_t initial_capacity);
+void* blz_darray_create(size_t element_size);
 void blz_darray_destroy(void* array);
 void* blz_darray_at(void* array, size_t index);
 const void* blz_darray_at_const(const void* array, size_t index);
 bool blz_darray_pushback(void** array, const void* element, size_t element_size);
-bool blz_darray_pop(void* array);
+bool blz_darray_popback(void* array);
 void blz_darray_for_each(const void* array, void (*callback)(const void* element, size_t index, void* user_data), void* user_data);
 
 #endif // !_GUARD_BLAZE_DYNAMIC_ARRAY_H_

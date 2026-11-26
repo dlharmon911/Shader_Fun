@@ -33,7 +33,7 @@ static bool sf_widget_editor_process_key_backspace(blz_widget_t* widget, ALLEGRO
         data->m_editor_data.m_info.m_selection.m_end = (blz_cursor_t){ data->m_editor_data.m_info.m_cursor.m_line, data->m_editor_data.m_info.m_cursor.m_offset + 1 };
     }
 
-    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, NULL);
 
     (void)edit_result; // Silence unused variable warning
 
@@ -79,7 +79,7 @@ static bool sf_widget_editor_process_key_delete(blz_widget_t* widget, ALLEGRO_EV
 		data->m_editor_data.m_info.m_selection.m_end = (blz_cursor_t){ data->m_editor_data.m_info.m_cursor.m_line, data->m_editor_data.m_info.m_cursor.m_offset + 1 };
     }
 
-    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
+    int32_t edit_result = blz_text_edit(edit_type, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, NULL);
 
     (void)edit_result; // Silence unused variable warning
 
@@ -204,7 +204,7 @@ static bool sf_widget_editor_process_key_escape(blz_widget_t* widget, ALLEGRO_EV
 
 static bool sf_widget_editor_process_key_enter(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-	int32_t split_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, data->m_editor_data.m_text, &data->m_editor_data.m_info, NULL);
+	int32_t split_result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, NULL);
 
 	(void)split_result; // Silence unused variable warning
 
@@ -219,7 +219,7 @@ static bool sf_widget_editor_process_key_tab(blz_widget_t* widget, ALLEGRO_EVENT
 {
     const char text[2] = { BLAZE_TAB_CHAR, 0};
 
-    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, (const void*)text);
+    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, (const void*)text);
 
     if (result == 0)
     {
@@ -283,7 +283,7 @@ static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_E
 
 	const char text[2] = {(char)c, 0};
 
-	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, (const void*)text);
+	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, (const void*)text);
 
     if (result == 0)
     {
@@ -296,7 +296,7 @@ static bool sf_widget_editor_process_key_default(blz_widget_t* widget, ALLEGRO_E
 
 static bool sf_widget_editor_process_control_key_cut(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
 {
-    int32_t cut = blz_text_cut_to_clipboard(data->m_editor_data.m_text, &data->m_editor_data.m_info);
+    int32_t cut = blz_text_cut_to_clipboard(data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo);
 
     (void)cut; // Silence unused variable warning
 
@@ -326,11 +326,55 @@ static bool sf_widget_editor_process_control_key_paste(blz_widget_t* widget, ALL
 		return false;
 	}
 
-	int32_t pasted = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, clipboard_text);
+	int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_PASTE, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, clipboard_text);
 
-	(void)pasted; // Silence unused variable warning
+    if (result == 0)
+    {
+        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+        data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
+    }
 
-    if (pasted == 0)
+    return false;
+}
+
+static bool sf_widget_editor_process_control_key_undo(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+    if (!widget || !data)
+    {
+        return false;
+    }
+
+	if (!blz_text_undo_can_undo(&data->m_editor_data.m_undo))
+	{
+		return false;
+	}
+
+    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_UNDO, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, NULL);
+
+    if (result == 0)
+    {
+        data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
+        data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
+    }
+
+    return false;
+}
+
+static bool sf_widget_editor_process_control_key_redo(blz_widget_t* widget, ALLEGRO_EVENT event, sf_dialog_data_t* data)
+{
+    if (!widget || !data)
+    {
+        return false;
+    }
+
+	if (!blz_text_undo_can_redo(&data->m_editor_data.m_undo))
+	{
+		return false;
+	}
+
+    int32_t result = blz_text_edit(BLAZE_TEXT_EDIT_OPTION_REDO, data->m_editor_data.m_text, &data->m_editor_data.m_info, &data->m_editor_data.m_undo, NULL);
+
+    if (result == 0)
     {
         data->m_text_flags |= SF_TEXT_FLAG_NEEDS_REBUILD;
         data->m_flags |= (SF_TEXT_FLAG_MODIFIED | SF_TEXT_FLAG_TITLE_NEEDS_CHANGED);
@@ -383,7 +427,9 @@ static const sf_widget_editor_process_key_func_t sf_widget_editor_process_contro
 	[ALLEGRO_KEY_S] = sf_widget_editor_process_control_key_save,
     [ALLEGRO_KEY_V] = sf_widget_editor_process_control_key_paste,
 	[ALLEGRO_KEY_X] = sf_widget_editor_process_control_key_cut,
-	[ALLEGRO_KEY_A] = sf_widget_editor_process_control_key_select_all
+	[ALLEGRO_KEY_A] = sf_widget_editor_process_control_key_select_all,
+	[ALLEGRO_KEY_Z] = sf_widget_editor_process_control_key_undo,
+	[ALLEGRO_KEY_Y] = sf_widget_editor_process_control_key_redo,
 };
 
 bool sf_widget_editor_key_func(blz_widget_t* widget, const ALLEGRO_EVENT* event, void* data)

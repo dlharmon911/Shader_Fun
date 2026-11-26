@@ -29,7 +29,7 @@ static int32_t sf_shader_generate_uniform_text(ALLEGRO_USTR* text, const sf_unif
 
 	char buffer[256] = { 0 };
 
-	sprintf_s(buffer, sizeof(buffer), "%s %s %s;" BLAZE_NEWLINE_STR, 
+	sprintf_s(buffer, sizeof(buffer), "%s %s %s;\n", 
 		SF_SHADER_TEXT_STRS[BLAZE_SHADER_TEXT_UNIFORM],
 		SF_UNIFORM_NAME_STRS[uniform->m_type], 
 		uniform->m_name);
@@ -82,17 +82,17 @@ static int32_t sf_shader_process_line(ALLEGRO_USTR* text, blz_stringview_t line)
 		{
 			int32_t next_c = (int32_t)line.m_data[i + 1];
 
-			if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_TAB)
+			if (next_c == BLAZE_TAB_CHAR)
 			{
 				c = BLAZE_TAB_CHAR;
 				++i;
 			}
-			else if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_NEWLINE)
+			else if (next_c == BLAZE_NEWLINE_CHAR)
 			{
 				c = BLAZE_NEWLINE_CHAR;
 				++i;
 			}
-			else if (next_c == BLAZE_ESCAPE_CHAR_SUFFIX_CARRIAGE_RETURN)
+			else if (next_c == BLAZE_CARRIAGE_RETURN_CHAR)
 			{
 				c = BLAZE_CARRIAGE_RETURN_CHAR;
 				++i;

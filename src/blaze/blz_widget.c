@@ -1,9 +1,10 @@
 #include "blaze/blz_widget.h"
+#include "blaze/blz_malloc.h"
 #include "blaze/blz_frame.h"
 
 blz_widget_t* blz_widget_create(float x, float y, float width, float height, void* data, const blz_widget_vtable_t* vtable)
 {
-	blz_widget_t* widget = (blz_widget_t*)al_malloc(sizeof(blz_widget_t));
+	blz_widget_t* widget = (blz_widget_t*)blz_malloc_new(sizeof(blz_widget_t));
 	
 	if (widget == NULL)
 	{

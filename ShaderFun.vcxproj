@@ -167,6 +167,7 @@
     <ClInclude Include="include\blaze\blz_frame.h" />
     <ClInclude Include="include\blaze\blz_input.h" />
     <ClInclude Include="include\blaze\blz_log.h" />
+    <ClInclude Include="include\blaze\blz_malloc.h" />
     <ClInclude Include="include\blaze\blz_math.h" />
     <ClInclude Include="include\blaze\blz_shapes.h" />
     <ClInclude Include="include\blaze\blz_string.h" />
@@ -197,10 +198,12 @@
     <ClCompile Include="src\blaze\blz_frame.c" />
     <ClCompile Include="src\blaze\blz_input.c" />
     <ClCompile Include="src\blaze\blz_log.c" />
+    <ClCompile Include="src\blaze\blz_malloc.c" />
     <ClCompile Include="src\blaze\blz_math.c" />
     <ClCompile Include="src\blaze\blz_string.c" />
     <ClCompile Include="src\blaze\blz_stringview.c" />
     <ClCompile Include="src\blaze\blz_text.c" />
+    <ClCompile Include="src\blaze\blz_text_undo.c" />
     <ClCompile Include="src\blaze\blz_widget.c" />
     <ClCompile Include="src\sf_dialog_main.c" />
     <ClCompile Include="src\sf_main.c" />

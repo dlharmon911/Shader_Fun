@@ -9,6 +9,7 @@ struct sf_widget_editor_data_tag_t
 {
 	blz_text_info_t m_info;
 	blz_text_t* m_text;
+	blz_text_undo_t m_undo;
 	float m_text_x_offset;
 };
 

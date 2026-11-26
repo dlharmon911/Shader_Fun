@@ -436,7 +436,7 @@ static char* sf_main_get_shader(int32_t argc, char** argv)
 		}
 
 		size_t file_size = al_fsize(file);
-		char* shader_code = (char*)al_malloc(file_size + 1);
+		char* shader_code = (char*)blz_malloc_new(file_size + 1);
 		if (!shader_code)
 		{
 			al_fclose(file);
@@ -448,7 +448,7 @@ static char* sf_main_get_shader(int32_t argc, char** argv)
 
 		if (read_size != file_size)
 		{
-			al_free(shader_code);
+			blz_malloc_delete(shader_code);
 			return NULL;
 		}
 
@@ -470,7 +470,7 @@ int32_t main(int32_t argc, char* argv[])
 
 	sf_dialog_data_t dialog_data =
 	{
-		.m_editor_data = { { 0 }, NULL },
+		.m_editor_data = { { 0 }, NULL, { 0 }, 0.0f },
 		.m_console_data = { { 0 }, NULL },
 		.m_shader_data = { NULL },
 		.m_uniform_data = { NULL },
@@ -503,12 +503,12 @@ int32_t main(int32_t argc, char* argv[])
 
 		if (shader_code)
 		{
-			data.m_dialog_data->m_editor_data.m_text = blz_text_create(shader_code);
+			data.m_dialog_data->m_editor_data.m_text = blz_text_create_from_cstr(shader_code);
 			filename = argv[1];
 		}
 		else
 		{
-			data.m_dialog_data->m_editor_data.m_text = blz_text_create(DEFAULT_CODE);
+			data.m_dialog_data->m_editor_data.m_text = blz_text_create_from_cstr(DEFAULT_CODE);
 			filename = "default shader";
 		}
 
@@ -527,7 +527,7 @@ int32_t main(int32_t argc, char* argv[])
 
 		if (shader_code)
 		{
-			al_free(shader_code);
+			blz_malloc_delete(shader_code);
 		}
 	}
 

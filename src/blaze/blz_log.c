@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include "blaze/blz_common.h"
+#include "blaze/blz_malloc.h"
 #include "blaze/blz_log.h"
 
 static ALLEGRO_FILE** blz_log_get_file()
@@ -232,7 +233,7 @@ void blz_log_print_vargs(const char* const format, va_list va_arg_list)
 		return;
 	}
 
-	if (!(buffer = (char*)al_malloc(length * sizeof(char))))
+	if (!(buffer = (char*)blz_malloc_new(length * sizeof(char))))
 	{
 		return;
 	}
@@ -241,7 +242,7 @@ void blz_log_print_vargs(const char* const format, va_list va_arg_list)
 
 	blz_log_print(buffer);
 
-	al_free(buffer);
+	blz_malloc_delete(buffer);
 }
 
 void blz_log_printf(const char* const format, ...)

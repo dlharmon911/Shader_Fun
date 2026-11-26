@@ -1,4 +1,5 @@
 #include <allegro5/allegro_memfile.h>
+#include "blaze/blz_malloc.h"
 
 static int32_t _blz_file_load_to_memory(const char* filename, void** data, size_t* size)
 {
@@ -25,7 +26,7 @@ static int32_t _blz_file_load_to_memory(const char* filename, void** data, size_
 	
 	size_t file_size = al_fsize(file);
 	
-	void* buffer = al_malloc(file_size);
+	void* buffer = blz_malloc_new(file_size);
 	if (!buffer)
 	{
 		al_fclose(file);
@@ -38,7 +39,7 @@ static int32_t _blz_file_load_to_memory(const char* filename, void** data, size_
 	
 	if (read_size != file_size)
 	{
-		al_free(buffer);
+		blz_malloc_delete(buffer);
 		return -1;
 	}
 	
@@ -158,7 +159,7 @@ int32_t blz_convert_file_to_c_array(const char* input_filename, const char* outp
 	}
 	
 	int32_t result = _blz_save_to_c_array(output_filename, array_name, data, size);
-	al_free(data);
+	blz_malloc_delete(data);
 	return result;
 }
 

@@ -104,7 +104,7 @@ bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, con
 	}
 	
 	size_t name_length = strlen(name);
-	new_uniform.m_name = (char*)al_malloc(name_length + 1);
+	new_uniform.m_name = (char*)blz_malloc_new(name_length + 1);
 	
 	if (!new_uniform.m_name)
 	{
@@ -121,7 +121,7 @@ bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, con
 
 	if (!blz_darray_pushback(uniform, &new_uniform, sizeof(sf_uniform_t)))
 	{
-		al_free(new_uniform.m_name);
+		blz_malloc_delete(new_uniform.m_name);
 		return false;
 	}
 
@@ -130,7 +130,7 @@ bool sf_uniform_push(sf_uniform_t** uniform, const char* name, int32_t type, con
 
 bool sf_uniform_pop(sf_uniform_t* uniform)
 {
-	return blz_darray_pop(uniform);
+	return blz_darray_popback(uniform);
 }
 
 static void _sf_uniform_destroy_callback(const void* element, size_t index, void* user_data)
@@ -138,7 +138,7 @@ static void _sf_uniform_destroy_callback(const void* element, size_t index, void
 	sf_uniform_t* uniform = (sf_uniform_t*)element;
 	if (uniform->m_name)
 	{
-		al_free(uniform->m_name);
+		blz_malloc_delete(uniform->m_name);
 		uniform->m_name = NULL;
 	}
 }

@@ -21,6 +21,7 @@
 #include "blaze/blz_byte.h"
 #include "blaze/blz_color.h"
 #include "blaze/blz_input.h"
+#include "blaze/blz_malloc.h"
 #include "blaze/blz_math.h"
 #include "blaze/blz_shapes.h"
 #include "blaze/blz_darray.h"

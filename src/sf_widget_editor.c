@@ -20,7 +20,7 @@ static int32_t sf_widget_editor_initialize(blz_widget_t* widget, sf_dialog_data_
     data->m_editor_data.m_info.m_line_spacing = 2.0f;
     data->m_editor_data.m_info.m_color = al_map_rgb(0, 0, 0);
     data->m_editor_data.m_info.m_selection = (blz_text_selection_t){ { 0, 0}, { 0, 0 }, BLAZE_TEXT_SELECTION_TYPE_NONE };
-	data->m_editor_data.m_info.m_highlighter = sf_text_highlighter_get();
+	blz_text_undo_zero(&data->m_editor_data.m_undo);
 
     return 0;
 }
@@ -33,6 +33,7 @@ static void sf_widget_editor_uninitialize(blz_widget_t* widget, sf_dialog_data_t
     }
 
     blz_text_destroy(data->m_editor_data.m_text);
+	blz_text_undo_clear(&data->m_editor_data.m_undo);
 }
 
 static void sf_widget_editor_start(blz_widget_t* widget, sf_dialog_data_t* data)
@@ -57,11 +58,12 @@ static void sf_widget_editor_render(const blz_widget_t* widget, const sf_dialog_
 {
     const blz_font_t* font = &data->m_fonts[BLAZE_FONT_ID_EDITOR];
     const blz_text_t* text_data = data->m_editor_data.m_text;
+    const blz_text_highlighter_t* highlighter = sf_text_highlighter_get();
     blz_vec2f_t position = { widget->m_position.m_x - data->m_editor_data.m_text_x_offset, widget->m_position.m_y };
 
     blz_draw_frame_f(widget->m_position.m_x, widget->m_position.m_y, widget->m_size.m_width - 1.0f, widget->m_size.m_height - 1.0f, BLAZE_FRAME_TYPE_WHITE, BLAZE_FRAME_BORDER_SUNKEN_ETCHED);
 
-    blz_text_draw(font, text_data, position, widget->m_size, &data->m_editor_data.m_info);
+    blz_text_draw(font, highlighter, text_data, position, widget->m_size, &data->m_editor_data.m_info);
 }
 
 static void sf_widget_editor_scroll_to_cursor(const blz_widget_t* widget, sf_dialog_data_t* data)

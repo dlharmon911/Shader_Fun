@@ -1,6 +1,9 @@
 #include <string.h>
 #include "blaze/blz_common.h"
+#include "blaze/blz_malloc.h"
 #include "blaze/blz_darray.h"
+
+#define BLZ_DARRAY_INITIAL_CAPACITY 4
 
 typedef struct blz_darray_header_tag_t blz_darray_header_t;
 
@@ -11,22 +14,22 @@ struct blz_darray_header_tag_t
 	size_t m_element_size;
 };
 
-static blz_darray_header_t* blz_darray_header_create(size_t element_size, size_t initial_capacity)
+static blz_darray_header_t* blz_darray_header_create(size_t element_size)
 {
-	blz_darray_header_t* header = (blz_darray_header_t*)al_malloc(sizeof(blz_darray_header_t) + element_size * initial_capacity);
+	blz_darray_header_t* header = (blz_darray_header_t*)blz_malloc_new(sizeof(blz_darray_header_t) + element_size * BLZ_DARRAY_INITIAL_CAPACITY);
 	if (header == NULL)
 	{
 		return NULL;
 	}
 	header->m_size = 0;
-	header->m_capacity = initial_capacity;
+	header->m_capacity = BLZ_DARRAY_INITIAL_CAPACITY;
 	header->m_element_size = element_size;
 	return header;
 }
 
-void* blz_darray_create(size_t element_size, size_t initial_capacity)
+void* blz_darray_create(size_t element_size)
 {
-	blz_darray_header_t* header = blz_darray_header_create(element_size, initial_capacity);
+	blz_darray_header_t* header = blz_darray_header_create(element_size);
 	if (header == NULL)
 	{
 		return NULL;
@@ -36,7 +39,7 @@ void* blz_darray_create(size_t element_size, size_t initial_capacity)
 
 static void blz_darray_header_destroy(blz_darray_header_t* header)
 {
-	al_free(header);
+	blz_malloc_delete(header);
 }
 
 
@@ -124,7 +127,7 @@ bool blz_darray_pushback(void** array, const void* element, size_t element_size)
 
 	if (*array == NULL)
 	{
-		header = blz_darray_header_create(element_size, 4);
+		header = blz_darray_header_create(element_size);
 
 		if (header == NULL)
 		{
@@ -138,7 +141,7 @@ bool blz_darray_pushback(void** array, const void* element, size_t element_size)
 		if (header->m_size >= header->m_capacity)
 		{
 			size_t new_capacity = header->m_capacity * 2;
-			blz_darray_header_t* new_header = (blz_darray_header_t*)al_realloc(header, sizeof(blz_darray_header_t) + element_size * new_capacity);
+			blz_darray_header_t* new_header = (blz_darray_header_t*)blz_malloc_new_realloc(header, sizeof(blz_darray_header_t) + element_size * new_capacity);
 			if (new_header == NULL)
 			{
 				return false;
@@ -156,7 +159,7 @@ bool blz_darray_pushback(void** array, const void* element, size_t element_size)
 	return true;
 }
 
-bool blz_darray_pop(void* array)
+bool blz_darray_popback(void* array)
 {
 	if (array == NULL)
 	{

@@ -16,24 +16,26 @@ enum BLAZE_TEXT_SELECTION_TYPE
 
 enum BLAZE_TEXT_EDIT_OPTIONS
 {
-	BLAZE_TEXT_EDIT_OPTION_NONE,
+	BLAZE_TEXT_EDIT_OPTION_NONE = -1,
 	BLAZE_TEXT_EDIT_OPTION_EXCISE,
+	BLAZE_TEXT_EDIT_OPTION_EXCISE_AND_PASTE,
 	BLAZE_TEXT_EDIT_OPTION_PASTE,
 	BLAZE_TEXT_EDIT_OPTION_SPLIT_LINE,
 	BLAZE_TEXT_EDIT_OPTION_MERGE_LINE,
+	BLAZE_TEXT_EDIT_OPTION_UNDO,
+	BLAZE_TEXT_EDIT_OPTION_REDO,
 	BLAZE_TEXT_EDIT_OPTION_COUNT
 };
 
-#define BLAZE_NEWLINE_STR "\n"
-#define BLAZE_TAB_STR "\t"
+#define BLAZE_TEXT_UNDO_MAX_COUNT 100
+
+static const char* BLAZE_NEWLINE_STR = "\n";
+static const char* BLAZE_TAB_STR = "\t";
 
 static const int32_t BLAZE_TAB_CHAR = '\t';
 static const int32_t BLAZE_NEWLINE_CHAR = '\n';
 static const int32_t BLAZE_CARRIAGE_RETURN_CHAR = '\r';
 static const int32_t BLAZE_ESCAPE_CHAR = '\\';
-static const int32_t BLAZE_ESCAPE_CHAR_SUFFIX_TAB = 't';
-static const int32_t BLAZE_ESCAPE_CHAR_SUFFIX_NEWLINE = 'n';
-static const int32_t BLAZE_ESCAPE_CHAR_SUFFIX_CARRIAGE_RETURN = 'r';
 
 typedef struct blz_text_node_tag_t blz_text_node_t;
 typedef struct blz_text_tag_t blz_text_t;
@@ -41,7 +43,10 @@ typedef struct blz_cursor_tag_t blz_cursor_t;
 typedef struct blz_text_selection_tag_t blz_text_selection_t;
 typedef struct blz_text_info_tag_t blz_text_info_t;
 typedef struct blz_text_highlighter_tag_t blz_text_highlighter_t;
-typedef struct blz_text_info_tag_t blz_text_info_t;
+typedef struct blz_text_undo_node_data_tag_t blz_text_undo_node_data_t;
+typedef struct blz_text_undo_node_tag_t blz_text_undo_node_t;
+typedef struct blz_text_undo_tag_t blz_text_undo_t;
+
 
 typedef void (*blz_text_highlight_begin_func_t)(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* user_data);
 typedef void (*blz_text_highlight_finish_func_t)(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info, void* user_data);
@@ -82,7 +87,6 @@ struct blz_text_highlighter_tag_t
 struct blz_text_info_tag_t
 {
 	blz_text_selection_t m_selection;
-	const blz_text_highlighter_t* m_highlighter;
 	int32_t m_top_line;
 	blz_cursor_t m_cursor;
 	float m_horizontal_padding;
@@ -91,8 +95,30 @@ struct blz_text_info_tag_t
 	ALLEGRO_COLOR m_color;
 };
 
+struct blz_text_undo_node_data_tag_t
+{
+	blz_text_info_t m_info;
+	blz_text_t* m_text;
+};
+
+struct blz_text_undo_node_tag_t
+{
+	int32_t m_type;
+	blz_text_undo_node_data_t m_data;
+	blz_text_undo_node_data_t m_extra;
+};
+
+struct blz_text_undo_tag_t
+{
+	blz_text_undo_node_t* m_node;
+	int32_t m_current;
+};
+
+void blz_text_info_copy(blz_text_info_t* dest, const blz_text_info_t* src);
+
 blz_text_t* blz_text_create_empty();
-blz_text_t* blz_text_create(const char* text);
+blz_text_t* blz_text_create_from_cstr(const char* text);
+blz_text_t* blz_text_create_from_ustr(const ALLEGRO_USTR* text);
 void blz_text_destroy(blz_text_t* text);
 blz_text_t* blz_text_clone(const blz_text_t* text);
 blz_text_t* blz_text_load_from_file(const char* filename);
@@ -108,13 +134,34 @@ blz_text_node_t* blz_text_get_previous_line(const blz_text_t* text, const blz_te
 blz_text_node_t* blz_text_get_next_line(const blz_text_t* text, const blz_text_node_t* current_line);
 bool blz_text_merge(blz_text_node_t* a, blz_text_node_t** b);
 bool blz_text_split(blz_text_node_t** node, int32_t offset);
-void blz_text_draw(const blz_font_t* font, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info);
+void blz_text_draw(const blz_font_t* font, const blz_text_highlighter_t* highlighter, const blz_text_t* text, blz_vec2f_t position, blz_sizef_t size, const blz_text_info_t* info);
 void blz_text_draw_line_tab_delimited(const blz_font_t* font, blz_stringview_t text, blz_vec2f_t position, int32_t* offset, const ALLEGRO_COLOR color);
-int32_t blz_text_cut_to_clipboard(blz_text_t* text, blz_text_info_t* info);
+int32_t blz_text_cut_to_clipboard(blz_text_t* text, blz_text_info_t* info, blz_text_undo_t* undo);
 int32_t blz_text_copy_to_clipboard(const blz_text_t* text, const blz_text_info_t* info);
-int32_t blz_text_edit(int32_t option, blz_text_t* text, blz_text_info_t* info, const void* data);
+int32_t blz_text_edit(int32_t option, blz_text_t* text, blz_text_info_t* info, blz_text_undo_t* undo, const void* data);
 int32_t blz_text_calculate_tabbed_offset(blz_stringview_t line, int32_t offset);
 int32_t blz_text_calculate_untabbed_offset(blz_stringview_t line, int32_t tabbed_offset);
+ALLEGRO_USTR* blz_text_copy_to_ustr(const blz_text_t* text, const blz_text_info_t* info);
+blz_text_t* blz_text_copy(const blz_text_t* text, const blz_text_info_t* info);
+int32_t blz_text_paste_cursor(const blz_text_t* text, blz_text_info_t* info, const blz_text_t* paste_text);
+
+blz_text_undo_node_t* blz_text_undo_node_create(int32_t type, const blz_text_undo_node_data_t* data, const blz_text_undo_node_data_t* extra);
+void blz_text_undo_node_clear(blz_text_undo_node_t* undo_node);
+void blz_text_undo_node_destroy(blz_text_undo_node_t* undo_node);
+
+void blz_text_undo_zero(blz_text_undo_t* undo);
+void blz_text_undo_clear(blz_text_undo_t* undo);
+size_t blz_text_undo_get_count(const blz_text_undo_t* undo);
+bool blz_text_undo_can_undo(const blz_text_undo_t* undo);
+bool blz_text_undo_can_redo(const blz_text_undo_t* undo);
+int32_t blz_text_undo_get_current(const blz_text_undo_t* undo);
+int32_t blz_text_undo_inc_current(blz_text_undo_t* undo);
+int32_t blz_text_undo_dec_current(blz_text_undo_t* undo);
+blz_text_undo_node_t* blz_text_undo_get(const blz_text_undo_t* undo, size_t index);
+const blz_text_undo_node_t* blz_text_undo_get_const(const blz_text_undo_t* undo, size_t index);
+bool blz_text_undo_pushback(blz_text_undo_t* undo, int32_t type, const blz_text_undo_node_data_t* data, const blz_text_undo_node_data_t* extra);
+bool blz_text_undo_popback(blz_text_undo_t* undo);
+bool blz_text_undo_pop_to_current(blz_text_undo_t* undo);
 
 #endif // !_GUARD_BLAZE_TEXT_H_
 

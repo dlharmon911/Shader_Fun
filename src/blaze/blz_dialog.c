@@ -1,10 +1,11 @@
 #include "blaze/blz_dialog.h"
 #include "blaze/blz_frame.h"
+#include "blaze/blz_malloc.h"
 #include "blaze/blz_darray.h"
 
 blz_dialog_t* blz_dialog_create(float x, float y, float width, float height, void* data, const blz_dialog_vtable_t* vtable)
 {
-	blz_dialog_t* dialog = (blz_dialog_t*)al_malloc(sizeof(blz_dialog_t));
+	blz_dialog_t* dialog = (blz_dialog_t*)blz_malloc_new(sizeof(blz_dialog_t));
 
 	if (dialog == NULL)
 	{
@@ -23,7 +24,7 @@ blz_dialog_t* blz_dialog_create(float x, float y, float width, float height, voi
 	{
 		if (vtable->m_initialize((blz_widget_t*)dialog, data) != 0)
 		{
-			al_free(dialog);
+			blz_malloc_delete(dialog);
 			return NULL;
 		}
 	}
@@ -52,7 +53,7 @@ void blz_dialog_destroy(blz_dialog_t* dialog, void* data)
 		((blz_widget_t*)dialog)->m_table->m_uninitialize(((blz_widget_t*)dialog), data);
 	}
 
-	al_free(dialog);
+	blz_malloc_delete(dialog);
 }
 
 void* blz_dialog_add_child(blz_dialog_t* dialog, size_t id, blz_widget_t* child, void* data)
@@ -62,7 +63,7 @@ void* blz_dialog_add_child(blz_dialog_t* dialog, size_t id, blz_widget_t* child,
 		return NULL;
 	}
 
-	blz_dialog_child_t* dialog_child = (blz_dialog_child_t*)al_malloc(sizeof(blz_dialog_child_t));
+	blz_dialog_child_t* dialog_child = (blz_dialog_child_t*)blz_malloc_new(sizeof(blz_dialog_child_t));
 	if (dialog_child == NULL)
 	{
 		return NULL;

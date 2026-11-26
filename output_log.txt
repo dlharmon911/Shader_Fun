@@ -9,6 +9,78 @@ Info: Created display
 Info: Set display icon
 Info: Created event queue
 Info: Created timer
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
+Error: Failed to create shader
+File: D:\gtmp\repos\ShaderFun\src\sf_widget_shader.c
+Line: 129
 Info: Destroyed dialog
 Info: Destroyed filename
 Info: Destroyed timer
